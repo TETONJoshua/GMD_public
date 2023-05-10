@@ -14,7 +14,6 @@ namespace GMD.Services
             Regex def_regex = new(@"def: ""(.*?)"" \[.*?\]\n");
             Regex synonym_regex = new(@"synonym: ""(.*?)"" EXACT .*?\n");
             Regex xref_regex = new(@"xref: (.*?)\n");
-            Regex is_a_regex = new(@"is_a: (.*?) !.*?\n");
 
             using (StreamReader sr = new StreamReader(@"sources/hpo.obo"))
             {
@@ -36,11 +35,7 @@ namespace GMD.Services
                         term_xrefs.Add(xref_match.Groups[1].Value);
                     }
                     List<string> term_is_a = new();
-                    foreach (Match is_a_match in is_a_regex.Matches(term_text))
-                    {
-                        term_is_a.Add(is_a_match.Groups[1].Value);
-                    }
-                    Term term = new(term_id, term_name, term_def, term_synonyms, term_xrefs, term_is_a);
+                    Term term = new(term_id, term_name, term_def, term_synonyms, term_xrefs);
                     terms.Add(term);
                 }
             }
