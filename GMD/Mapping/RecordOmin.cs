@@ -1,12 +1,12 @@
 ﻿namespace GMD.Mapping
 {
-    public class Record
+    public class RecordOmin
     {
         public string Number { get; set; }
         public string Title { get; set; }
         public string ClinicalFeatures { get; set; }
 
-        public Record(string Number ="", string Title="", string ClinicalFeatures="")
+        public RecordOmin(string Number ="", string Title="", string ClinicalFeatures="")
         {
             this.Number = Number;
             this.Title = Title;

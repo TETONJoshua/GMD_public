@@ -4,26 +4,11 @@ namespace GMD.Services
 {
     public class ominTXT
     {
-        public static void Main(string[] args)
+
+        public static List<RecordOmin> ParseFile(string filePath)
         {
-            string filePath = "sources/omin.txt"; // Remplacez "chemin_vers_le_fichier" par le chemin réel du fichier
-
-            List<Record> records = ParseFile(filePath);
-
-            // Affichage des enregistrements extraits
-            foreach (Record record in records)
-            {
-                Console.WriteLine("Number: " + record.Number);
-                Console.WriteLine("Title: " + record.Title);
-                Console.WriteLine("Clinical Features: " + record.ClinicalFeatures);
-                Console.WriteLine();
-            }
-        }
-
-        public static List<Record> ParseFile(string filePath)
-        {
-            List<Record> records = new List<Record>();
-            Record currentRecord = null;
+            List<RecordOmin> records = new List<RecordOmin>();
+            RecordOmin currentRecord = null;
 
             string[] lines = File.ReadAllLines(filePath);
 
@@ -31,7 +16,7 @@ namespace GMD.Services
             {
                 if (line.StartsWith("*RECORD*"))
                 {
-                    currentRecord = new Record();
+                    currentRecord = new RecordOmin();
                     records.Add(currentRecord);
                 }
                 else if (line.StartsWith("*FIELD* NO"))
