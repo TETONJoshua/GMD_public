@@ -10,4 +10,8 @@
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="sources\" />
+  </ItemGroup>
+
 </Project>
