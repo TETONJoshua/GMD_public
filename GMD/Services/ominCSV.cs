@@ -4,7 +4,7 @@ namespace GMD.Services
 {
     public class ominCSV
     {
-        public static List<RecordOminCSV> ParseCsv()
+        public List<RecordOminCSV> ParseCsv()
         {
             List<RecordOminCSV> RecordOminCSVs = new List<RecordOminCSV>();
 

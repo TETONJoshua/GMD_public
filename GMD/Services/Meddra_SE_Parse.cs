@@ -4,7 +4,7 @@ namespace GMD.Services
 {
     public class Meddra_SE_Parse
     {
-        public static List<Meddra_SE> ParseMeddra_SE()
+        public List<Meddra_SE> ParseMeddra_SE()
         {
             List<Meddra_SE> symptomList = new List<Meddra_SE>();
 

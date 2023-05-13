@@ -44,7 +44,7 @@ namespace GMD.Services
                     }
                     
                 }
-                Console.WriteLine(record.name + " : " + record.products.Count);
+                //Console.WriteLine(record.name + " : " + record.products.Count);
                 /*if (drug["interaction"]!= null)
                 {
                     record.interaction = drug["interaction"].InnerText;

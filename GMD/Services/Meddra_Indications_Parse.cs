@@ -4,7 +4,7 @@ namespace GMD.Services
 {
     public class Meddra_Indications_Parse
     {
-        public static List<Meddra_Indications> ParseMeddra()
+        public List<Meddra_Indications> ParseMeddra()
         {
             List<Meddra_Indications> symptomList = new List<Meddra_Indications>();
 

@@ -5,7 +5,7 @@ namespace GMD.Services
     public class ominTXT
     {
 
-        public static List<RecordOmin> ParseFile()
+        public List<RecordOmin> ParseFile()
         {
             List<RecordOmin> records = new List<RecordOmin>();
             RecordOmin currentRecord = null;

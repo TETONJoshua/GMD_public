@@ -5,7 +5,7 @@ namespace GMD.Services
 {
     public class ChemicalParse
     {
-        public static List<Chemical> ParseChemical()
+        public List<Chemical> ParseChemical()
         {
             List<Chemical> chemicals = new List<Chemical>();
             string[] lines = File.ReadAllLines("sources/chemical.sources.v5.0.tsv");

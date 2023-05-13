@@ -1,6 +1,6 @@
 ﻿namespace GMD.Mapping
 {
-    public class Term
+    public class RecordHPO
     {
         public string term_id{get; set;}
         public string name { get; set; }
@@ -8,7 +8,7 @@
         public List<string> synonyms { get; set; }
         public List<string> xrefs { get; set; }
 
-        public Term(string term_id = "", string name = "", string definition = "", List<string>? synonyms = null, List<string>? xrefs = null, List<string>? is_a = null)
+        public RecordHPO(string term_id = "", string name = "", string definition = "", List<string>? synonyms = null, List<string>? xrefs = null, List<string>? is_a = null)
         {
             this.term_id = term_id;
             this.name = name;
