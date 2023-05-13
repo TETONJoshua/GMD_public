@@ -22,48 +22,36 @@ namespace GMD.Services
                 //Console.WriteLine(drug["atc-codes"].FirstChild.Name);
                 countRecord++;
                 RecordDrugBankXML record = new RecordDrugBankXML();
-                var code = drug["external-identifiers"];
-                if (drug["external-identifiers"] !=null)
+                if (drug["name"] != null ) {record.name = drug["name"].InnerText;}
+                else { countNullNames++; }
+                if (drug["toxicity"] != null) { record.toxicity = drug["toxicity"].InnerText;}
+                else { countNullTox++; }
+                if (drug["synonyms"]!= null)
                 {
-                    foreach(XmlNode ident in drug["external-identifiers"].ChildNodes)
+                    foreach(XmlNode synonym in drug["synonyms"])
                     {
-                        if (ident["resource"].InnerText == "KEGG Drug")
-                        {
-                            record.atcCode = ident["identifier"].InnerText;
-                        }
+                        record.synonyms.Add(synonym.InnerText); 
                     }
-                    if (drug["name"] != null ) {record.name = drug["name"].InnerText;}
-                    else { countNullNames++; }
-                    if (drug["toxicity"] != null) { record.toxicity = drug["toxicity"].InnerText;}
-                    else { countNullTox++; }
-                    if (drug["synonyms"]!= null)
+                }
+                if (drug["products"] != null)
+                {
+                    foreach (XmlNode product in drug["products"])
                     {
-                        foreach(XmlNode synonym in drug["synonyms"])
+                        if (product["name"] != null)
                         {
-                            record.synonyms.Add(synonym.InnerText); 
-                        }
+                            record.products.Add(product["name"].InnerText);
+                        }                           
                     }
-                    if (drug["products"] != null)
-                    {
-                        foreach (XmlNode product in drug["products"])
-                        {
-                            if (product["name"] != null)
-                            {
-                                record.products.Add(product["name"].InnerText);
-                            }                           
-                        }
-                    }
-                    /*if (drug["interaction"]!= null)
-                    {
-                        record.interaction = drug["interaction"].InnerText;
-                    }*/
+                    
+                }
+                Console.WriteLine(record.name + " : " + record.products.Count);
+                /*if (drug["interaction"]!= null)
+                {
+                    record.interaction = drug["interaction"].InnerText;
+                }*/
 
-                    parsedResult.Add(record);
-                }
-                else
-                {
-                       countNullATC ++;
-                }
+                parsedResult.Add(record);
+                
                
             }
             return parsedResult;

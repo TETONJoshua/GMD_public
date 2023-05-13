@@ -19,7 +19,10 @@ namespace GMD.Pages
         
         public void OnGet()
         {
-           
+            /*drugBankXML dbx = new drugBankXML();
+            dbx.parseXML();*/
+            brKeg keg = new brKeg();
+            keg.parseKeg();
         }
     }
 }

@@ -14,16 +14,24 @@ namespace GMD.Services
             string[] lines = File.ReadAllLines("./sources/br08303.keg");
             foreach (string line in lines)
             {
-                if (line.StartsWith("F"))
+                if (line.StartsWith("E"))
                 {
-                    var kegInfo = line.Substring(11, line.Length-11).Split("  ");
-                    //Console.WriteLine($"Keg ATC : {kegInfo[0]} ; Keg Name : {kegInfo[1]}");
-                    records.Add(new RecordBrKEG(kegInfo[0], kegInfo[1]));
+                    var kegInfo = line.Substring(9, line.Length-9);
+                    var kegName = kegInfo.Substring(8).Split(' ');
+                    string correctedName = "";
+                    foreach (var subName in kegName)
+                    {
+                        if (!subName.StartsWith("[DG:")) { correctedName += subName + " "; }
+                    }
+                    correctedName.Remove(correctedName.Length - 1);
+                    Console.WriteLine($"Keg ATC : {kegInfo.Substring(0, 7)} ; Keg Name : {correctedName}");
+
+                    records.Add(new RecordBrKEG(kegInfo.Substring(0, 7), correctedName));
                 }
             }
             stopwatch.Stop();
-            //Console.WriteLine(records.Count);
-            //Console.WriteLine(stopwatch.ElapsedMilliseconds);
+            Console.WriteLine(records.Count);
+            Console.WriteLine(stopwatch.ElapsedMilliseconds);
             return records;
         }
     }
