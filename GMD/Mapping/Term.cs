@@ -16,10 +16,5 @@
             this.synonyms = synonyms ?? new List<string>();
             this.xrefs = xrefs ?? new List<string>();
         }
-
-        public override string ToString()
-        {
-            return $"Term(ID='{this.term_id}', Name='{this.name}')";
-        }
     }
 }
