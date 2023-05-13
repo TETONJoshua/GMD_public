@@ -5,12 +5,12 @@ namespace GMD.Services
     public class ominTXT
     {
 
-        public static List<RecordOmin> ParseFile(string filePath)
+        public static List<RecordOmin> ParseFile()
         {
             List<RecordOmin> records = new List<RecordOmin>();
             RecordOmin currentRecord = null;
 
-            string[] lines = File.ReadAllLines(filePath);
+            string[] lines = File.ReadAllLines("sources/omim.txt");
 
             foreach (string line in lines)
             {

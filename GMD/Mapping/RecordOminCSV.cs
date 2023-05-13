@@ -14,10 +14,5 @@
             this.Synonyms = Synonyms;
             this.PreferredLabel = PrefferedLabel;
         }
-
-        public override string ToString()
-        {
-            return $"RecordOminCSV(Number='{this.ClassId}', Title='{this.PreferredLabel}')";
-        }
     }
 }

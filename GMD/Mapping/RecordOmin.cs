@@ -12,10 +12,5 @@
             this.Title = Title;
             this.ClinicalFeatures = ClinicalFeatures;
         }
-
-        public override string ToString()
-        {
-            return $"Record(Number='{this.Number}', Title='{this.Title}')";
-        }
     }
 }

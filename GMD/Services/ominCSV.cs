@@ -4,11 +4,11 @@ namespace GMD.Services
 {
     public class ominCSV
     {
-        public static List<RecordOminCSV> ParseCsv(string filePath)
+        public static List<RecordOminCSV> ParseCsv()
         {
             List<RecordOminCSV> RecordOminCSVs = new List<RecordOminCSV>();
 
-            using (StreamReader reader = new StreamReader(filePath))
+            using (StreamReader reader = new StreamReader("sources/omim_onto.csv"))
             {
                 string line;
                 bool isFirstLine = true;
@@ -25,7 +25,7 @@ namespace GMD.Services
 
                     RecordOminCSV RecordOminCSV = new RecordOminCSV
                     {
-                        ClassId = values[0],
+                        ClassId = values[0].Replace("http://purl.bioontology.org/ontology/OMIM/",""),
                         Cui = values[5],
                         Synonyms = values[2],
                         PreferredLabel = values[1]

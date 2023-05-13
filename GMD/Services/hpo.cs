@@ -5,7 +5,7 @@ namespace GMD.Services
 {
     public class hpo
     {
-        public static List<Term> GetTerms()
+        public static List<Term> ParseHpo()
         {
             List<Term> terms = new();
             Regex term_regex = new(@"\[Term\]\n(.*?)\n\n", RegexOptions.Singleline);
