@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GMD.Mapping;
+using GMD.Services;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.ComponentModel;
 
 namespace GMD.Pages
 {
@@ -12,9 +16,13 @@ namespace GMD.Pages
             _logger = logger;
         }
 
+        
         public void OnGet()
         {
-
+            /*drugBankXML dbx = new drugBankXML();
+            dbx.parseXML();*/
+            brKeg keg = new brKeg();
+            keg.parseKeg();
         }
     }
 }
