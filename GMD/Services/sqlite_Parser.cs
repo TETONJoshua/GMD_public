@@ -4,7 +4,7 @@ namespace GMD.Services
 {
     public class sqlite_Parser
     {
-        public static List<sqlite> ParseSqlite()
+        public List<sqlite> ParseSqlite()
         {
             List<sqlite> list = new List<sqlite>();
             using (StreamReader reader = new StreamReader("sources/sqlite.txt"))

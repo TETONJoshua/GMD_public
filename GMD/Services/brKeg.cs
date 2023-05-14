@@ -23,15 +23,15 @@ namespace GMD.Services
                     {
                         if (!subName.StartsWith("[DG:")) { correctedName += subName + " "; }
                     }
-                    correctedName.Remove(correctedName.Length - 1);
-                    Console.WriteLine($"Keg ATC : {kegInfo.Substring(0, 7)} ; Keg Name : {correctedName}");
+                    correctedName = correctedName.Trim();
+                    //Console.WriteLine($"Keg ATC : {kegInfo.Substring(0, 7)} ; Keg Name : {correctedName}");
 
                     records.Add(new RecordBrKEG(kegInfo.Substring(0, 7), correctedName));
                 }
             }
             stopwatch.Stop();
-            Console.WriteLine(records.Count);
-            Console.WriteLine(stopwatch.ElapsedMilliseconds);
+            //Console.WriteLine(records.Count);
+            //Console.WriteLine(stopwatch.ElapsedMilliseconds);
             return records;
         }
     }

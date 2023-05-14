@@ -5,9 +5,9 @@ namespace GMD.Services
 {
     public class hpo
     {
-        public static List<Term> ParseHpo()
+        public List<RecordHPO> ParseHpo()
         {
-            List<Term> terms = new();
+            List<RecordHPO> terms = new();
             Regex term_regex = new(@"\[Term\]\n(.*?)\n\n", RegexOptions.Singleline);
             Regex id_regex = new(@"id: (.*?)\n");
             Regex name_regex = new(@"name: (.*?)\n");
@@ -35,7 +35,7 @@ namespace GMD.Services
                         term_xrefs.Add(xref_match.Groups[1].Value);
                     }
                     List<string> term_is_a = new();
-                    Term term = new(term_id, term_name, term_def, term_synonyms, term_xrefs);
+                    RecordHPO term = new(term_id, term_name, term_def, term_synonyms, term_xrefs);
                     terms.Add(term);
                 }
             }
