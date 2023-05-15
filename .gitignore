@@ -339,3 +339,4 @@ ASALocalRun/
 
 #ignore les sources
 sources/
+/GMD/lucene_index
