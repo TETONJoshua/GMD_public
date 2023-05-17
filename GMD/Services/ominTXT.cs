@@ -13,10 +13,7 @@ namespace GMD.Services
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordOmin> records = new List<RecordOmin>();
-            RecordOmin currentRecord = null;
             List<int> index= new List<int>();
-            List<int> indexTI= new List<int>();
-            List<int> indexCS= new List<int>();
             string[] lines = File.ReadAllLines("sources/omim.txt");
             int lineIndex = 0;
             foreach (string line in lines)
@@ -27,12 +24,10 @@ namespace GMD.Services
                 }
               lineIndex++;
             }
-            string number="", title="";
             for (int i=0; i<index.Count-1;  i++)
             {
                 records.Add(GetFieldValue(lines, index[i], index[i + 1]));               
             }
-            //Console.WriteLine("Number : " + records[0].Number + " Title : " + records[0].Title + " CS : " + records[0].ClinicalFeatures);
             stopwatch.Stop();
             Console.WriteLine("OMIM_TXT parse time : " + stopwatch.ElapsedMilliseconds + $" Fields : {records.Count}");
             return records;
@@ -40,8 +35,8 @@ namespace GMD.Services
 
         public RecordOmin GetFieldValue(string[] lines, int currentLineIndex, int nextIndex)
         {
-            string fieldValue = string.Empty;
             List<int> index = new List<int>();
+
             for (int i = currentLineIndex + 1; i < nextIndex; i++)
             {
                 if (lines[i].StartsWith('*'))
@@ -52,6 +47,7 @@ namespace GMD.Services
             string nb = string.Empty;
             string title = string.Empty;
             string clinic = string.Empty;
+
             for (int i = 0; i<index.Count-1; i++)
             {
                 if (lines[index[i]].StartsWith("*FIELD* NO"))
@@ -68,16 +64,6 @@ namespace GMD.Services
                     clinic = getValue(index[i] + 1, index[i + 1], lines);
                 }
             }
-
-            /*for (int i = index[0]+1; i < index[1]-1 ; i++)
-            {
-                nb+= lines[i].Trim() + Environment.NewLine;
-            }
-            for (int i = index[1]; i < index[2]; i++)
-            {
-                title += lines[i].Trim() + Environment.NewLine;
-            }*/
-            
             
             return new RecordOmin(nb, title, clinic);
         }
