@@ -90,5 +90,75 @@ namespace GMD.Services
             }
             return atcCodes;
         }
+
+        public static List<string> getHpoUMLSFromCui(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion)
+        {
+            string name, classID, HP;
+            Query query = new TermQuery(new Term("CUI", UMLS));
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            List<string> Hpo = new List<string>();
+            Console.WriteLine($"Linked disease : ");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                name = resultDoc.Get("name");
+                classID = resultDoc.Get("classID");
+                HP = resultDoc.Get("HP");
+                if (name != "" && name != null)
+                {
+                    Console.WriteLine($"    -> {name}");
+                }
+                if (HP != "" && HP != null)
+                {
+                    Console.WriteLine($"    -> {HP}");
+                    Hpo.Add(HP);
+                }
+                if (classID != "" && classID != null)
+                {
+                    Console.WriteLine($"    -> {classID}");
+                    Hpo.Add(classID);
+                }
+            }
+            return Hpo;
+        }
+
+        public static void getGenOmimbyCUI(IndexSearcher searcher, string classID, LuceneVersion luceneVersion)
+        {
+            string cID, title;
+            Query query = new TermQuery(new Term("Number", classID));
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            List<string> disease = new List<string>();
+            Console.WriteLine($"Linked disease : ");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                title = resultDoc.Get("title");
+                if (title != "" && title != null)
+                {
+                    Console.WriteLine($"    -> {title}");
+                }
+            }
+        }
+
+        public static void getGenOmimbyHP(IndexSearcher searcher, string HP, LuceneVersion luceneVersion)
+        {
+            string cID, title;
+            Query query = new TermQuery(new Term("HP", HP));
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            List<string> disease = new List<string>();
+            Console.WriteLine($"Linked disease : ");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                title = resultDoc.Get("title");
+                if (title != "" && title != null)
+                {
+                    Console.WriteLine($"    -> {title}");
+                }
+            }
+        }
     }
 }

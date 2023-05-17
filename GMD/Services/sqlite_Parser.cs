@@ -22,7 +22,7 @@ namespace GMD.Services
                         sqlite entry = new sqlite
                         {
                             disease_db = data[0],
-                            disease_id = data[1],
+                            disease_id = data[5],
                             disease_label = data[2]
                         };
 
@@ -41,7 +41,7 @@ namespace GMD.Services
             foreach (sqlite drug in SqliteDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("title", drug.disease_label, Field.Store.YES));
+                doc.Add(new TextField("title", drug.disease_label, Field.Store.YES));
                 doc.Add(new StringField("HP", drug.disease_id, Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
                 writer.AddDocument(doc);
