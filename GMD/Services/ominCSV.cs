@@ -1,6 +1,7 @@
 ﻿using GMD.Mapping;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using System.Diagnostics;
 
 namespace GMD.Services
 {
@@ -8,6 +9,7 @@ namespace GMD.Services
     {
         public List<RecordOminCSV> ParseCsv()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordOminCSV> RecordOminCSVs = new List<RecordOminCSV>();
 
             using (StreamReader reader = new StreamReader("sources/omim_onto.csv"))
@@ -36,12 +38,14 @@ namespace GMD.Services
                     RecordOminCSVs.Add(RecordOminCSV);
                 }
             }
-
+            stopwatch.Stop();
+            Console.WriteLine("OMIM_CSV : " + stopwatch.ElapsedMilliseconds);
             return RecordOminCSVs;
         }
 
         public void indexOminCsvDatas(List<RecordOminCSV> ominCSVdatas, IndexWriter writer)
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (RecordOminCSV drug in ominCSVdatas)
             {
                 Document doc = new Document();
@@ -53,6 +57,8 @@ namespace GMD.Services
             }
 
             writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("OMIM_CSV index time : " + stopwatch.ElapsedMilliseconds);
         }
     }
 }

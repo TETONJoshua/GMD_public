@@ -74,8 +74,11 @@ namespace GMD.Pages
             List<RecordHPO> hpoDatas = hpo.ParseHpo();
             List<sqlite> sqlitesDatas = sqliteParser.ParseSqlite();
             stopwatch.Stop();
-            TimeSpan time = stopwatch.Elapsed;
+
+            Console.WriteLine("Total Parse Time : " +  stopwatch.Elapsed);
+
             stopwatch.Restart();
+
             dbx.indexXmlDatas(drugBankDatas, writer);
             dKegg.indexKeggDatas(keggDatas, writer);
             chem.indexChemicalsDatas(chemicalsDatas, writer);
@@ -89,20 +92,24 @@ namespace GMD.Pages
             meddra.indexMeddraDatas(meddraDatas, writer);
 
             stopwatch.Stop();
-            TimeSpan time2 = stopwatch.Elapsed;
-            Console.WriteLine("Temps écoulé : " + time2);
+
+            Console.WriteLine("Total Index Time : " + stopwatch.Elapsed);
             
             using DirectoryReader reader = writer.GetReader(applyAllDeletes: true);
             IndexSearcher searcher = new IndexSearcher(reader);
 
-            string symptom = "hepatitis, thrombotic thrombocytopenic purpura, idiopathic thrombocytopenic purpura, psoriasis, rheumatoid arthritis, interstitial nephritis, thyroiditis";
-            Console.WriteLine("Symptomes recherchés: " + symptom);
+            stopwatch.Restart();
+            string symptom = "hepatitis";
+          
             getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom);
+            stopwatch.Stop();
+            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
             
         }
 
         public void getSideEffectsMoleculeNames(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom)
         {
+            Console.WriteLine("Symptomes recherchés: " + symptom);
             QueryParser parser = new QueryParser(luceneVersion, "toxicity", standardAnalyzer);
             Query query = parser.Parse(symptom);
             TopDocs topDocs = searcher.Search(query, n: 10);         //indicate we want the first 10 results

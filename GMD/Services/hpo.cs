@@ -1,6 +1,7 @@
 ﻿using GMD.Mapping;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace GMD.Services
@@ -9,6 +10,7 @@ namespace GMD.Services
     {
         public List<RecordHPO> ParseHpo()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordHPO> terms = new();
             Regex term_regex = new(@"\[Term\]\n(.*?)\n\n", RegexOptions.Singleline);
             Regex id_regex = new(@"id: (.*?)\n");
@@ -41,12 +43,14 @@ namespace GMD.Services
                     terms.Add(term);
                 }
             }
+            stopwatch.Stop();
+            Console.WriteLine("HPO_OBO parse tim : " + stopwatch.ElapsedMilliseconds);
             return terms;
         }
 
         public void indexHPODatas(List<RecordHPO> HPODatas, IndexWriter writer)
         {
-
+            Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (RecordHPO drug in HPODatas)
             {
                 Document doc = new Document();
@@ -59,12 +63,14 @@ namespace GMD.Services
                 }
                 foreach (string synonym in drug.synonyms)
                 {
-                    doc.Add(new StringField("Synonym", synonym, Field.Store.YES));
+                    doc.Add(new StringField("synonym", synonym, Field.Store.YES));
                 }
                 writer.AddDocument(doc);
             }
 
             writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("HPO index time : " + stopwatch.ElapsedMilliseconds);
         }
 
     }

@@ -1,6 +1,7 @@
 ﻿using GMD.Mapping;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using System.Diagnostics;
 using System.Xml;
 
 namespace GMD.Services
@@ -10,7 +11,7 @@ namespace GMD.Services
         public int countNullATC, countRecord, countNullNames, countNullTox;
         public List<RecordDrugBankXML> parseXML()
         {
-
+            Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordDrugBankXML> parsedResult = new List<RecordDrugBankXML>();
             XmlDocument drugBankSource = new XmlDocument();
             XmlTextReader reader = new XmlTextReader("./sources/drugbank.xml");
@@ -52,35 +53,38 @@ namespace GMD.Services
                 }*/
 
                 parsedResult.Add(record);
-
+               
 
             }
+            stopwatch.Stop();
+            Console.WriteLine("XML parse time : " + stopwatch.ElapsedMilliseconds);
             return parsedResult;
-
-
         }
 
         public void indexXmlDatas(List<RecordDrugBankXML> drugBankDatas, IndexWriter writer)
         {
-
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();  
             foreach (RecordDrugBankXML drug in drugBankDatas)
             {
                 Document doc = new Document();
                 doc.Add(new StringField("name", drug.name, Field.Store.YES));
-                doc.Add(new StringField("toxicity", drug.toxicity, Field.Store.YES));
-                doc.Add(new StringField("interaction", drug.interaction, Field.Store.YES));
+                doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
+                doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));
                 foreach (string product in drug.products)
                 {
                     doc.Add(new StringField("product", product, Field.Store.YES));
                 }
                 foreach (string synonym in drug.synonyms)
                 {
-                    doc.Add(new StringField("Synonym", synonym, Field.Store.YES));
+                    doc.Add(new StringField("synonym", synonym, Field.Store.YES));
                 }
                 writer.AddDocument(doc);
             }
 
             writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("XML index time : " + stopwatch.ElapsedMilliseconds);   
         }
 
 

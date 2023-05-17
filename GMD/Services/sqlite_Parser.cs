@@ -1,6 +1,7 @@
 ﻿using GMD.Mapping;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using System.Diagnostics;
 
 namespace GMD.Services
 {
@@ -8,6 +9,7 @@ namespace GMD.Services
     {
         public List<sqlite> ParseSqlite()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             List<sqlite> list = new List<sqlite>();
             using (StreamReader reader = new StreamReader("sources/sqlite.txt"))
             {
@@ -28,12 +30,14 @@ namespace GMD.Services
                     }
                 }
             }
+            stopwatch.Stop();
+            Console.WriteLine("SQLITE parse time : " + stopwatch.ElapsedMilliseconds);
             return list;
         }
 
         public void indexSqliteDatas(List<sqlite> SqliteDatas, IndexWriter writer)
         {
-
+            Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (sqlite drug in SqliteDatas)
             {
                 Document doc = new Document();
@@ -44,6 +48,8 @@ namespace GMD.Services
             }
 
             writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("SQLITE index time : " + stopwatch.ElapsedMilliseconds);
         }
     }
 }

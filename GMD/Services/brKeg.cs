@@ -33,13 +33,14 @@ namespace GMD.Services
             }
             stopwatch.Stop();
             //Console.WriteLine(records.Count);
-            //Console.WriteLine(stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("Kegg parse time : " + stopwatch.ElapsedMilliseconds);
             return records;
         }
 
         public void indexKeggDatas(List<RecordBrKEG> keggDatas, IndexWriter writer)
         {
-
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             foreach (RecordBrKEG drug in keggDatas)
             {
                 Document doc = new Document();
@@ -47,8 +48,10 @@ namespace GMD.Services
                 doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
                 writer.AddDocument(doc);
             }
-
+            
             writer.Commit();
+            sw.Stop();
+            Console.WriteLine("Kegg index time : " + sw.ElapsedMilliseconds);
         }
 
     }
