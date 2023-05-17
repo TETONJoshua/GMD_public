@@ -1,4 +1,8 @@
 ﻿using GMD.Mapping;
+using J2N.Numerics;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using System.Diagnostics;
 
 namespace GMD.Services
 {
@@ -7,53 +11,89 @@ namespace GMD.Services
 
         public List<RecordOmin> ParseFile()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordOmin> records = new List<RecordOmin>();
-            RecordOmin currentRecord = null;
-
+            List<int> index= new List<int>();
             string[] lines = File.ReadAllLines("sources/omim.txt");
-
+            int lineIndex = 0;
             foreach (string line in lines)
             {
-                if (line.StartsWith("*RECORD*"))
+              if (line.StartsWith("*RECORD*"))
                 {
-                    currentRecord = new RecordOmin();
-                    records.Add(currentRecord);
+                    index.Add(lineIndex);
                 }
-                else if (line.StartsWith("*FIELD* NO"))
-                {
-                    currentRecord.Number = GetFieldValue(lines, line);
-                }
-                else if (line.StartsWith("*FIELD* TI"))
-                {
-                    currentRecord.Title = GetFieldValue(lines, line);
-                }
-                else if (line.StartsWith("*FIELD* CS"))
-                {
-                    currentRecord.ClinicalFeatures = GetFieldValue(lines, line);
-                }
+              lineIndex++;
             }
-
+            for (int i=0; i<index.Count-1;  i++)
+            {
+                records.Add(GetFieldValue(lines, index[i], index[i + 1]));               
+            }
+            stopwatch.Stop();
+            Console.WriteLine("OMIM_TXT parse time : " + stopwatch.ElapsedMilliseconds + $" Fields : {records.Count}");
             return records;
         }
 
-        public static string GetFieldValue(string[] lines, string currentLine)
+        public RecordOmin GetFieldValue(string[] lines, int currentLineIndex, int nextIndex)
         {
-            int currentIndex = Array.IndexOf(lines, currentLine);
-            string fieldValue = string.Empty;
+            List<int> index = new List<int>();
 
-            for (int i = currentIndex + 1; i < lines.Length; i++)
+            for (int i = currentLineIndex + 1; i < nextIndex; i++)
             {
-                string line = lines[i];
-
-                if (line.StartsWith("*FIELD*"))
+                if (lines[i].StartsWith('*'))
                 {
-                    break;
+                    index.Add(i);
                 }
+            }
+            string nb = string.Empty;
+            string title = string.Empty;
+            string clinic = string.Empty;
 
-                fieldValue += line.Trim() + Environment.NewLine;
+            for (int i = 0; i<index.Count-1; i++)
+            {
+                if (lines[index[i]].StartsWith("*FIELD* NO"))
+                {
+                    nb = getValue(index[i]+1, index[i+1], lines);
+                }
+                if (lines[index[i]].StartsWith("*FIELD* TI"))
+                {
+                    title = getValue(index[i] + 1, index[i + 1], lines);
+
+                }
+                if (lines[index[i]].StartsWith("*FIELD* CS"))
+                {
+                    clinic = getValue(index[i] + 1, index[i + 1], lines);
+                }
+            }
+            
+            return new RecordOmin(nb, title, clinic);
+        }
+
+        public string getValue(int min, int max, string[] lines)
+        {
+            string value = string.Empty;
+            for (int i = min; i < max; i++)
+            {
+                value += lines[i].Trim() + Environment.NewLine;
+            }
+            return value;
+        }
+
+        public void indexOminTxtDatas(List<RecordOmin> drugBankDatas, IndexWriter writer)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            foreach (RecordOmin drug in drugBankDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("title", drug.Title, Field.Store.YES));
+                doc.Add(new StringField("classID", drug.Number, Field.Store.YES));
+                doc.Add(new StringField("title", drug.ClinicalFeatures, Field.Store.YES));
+                writer.AddDocument(doc);
             }
 
-            return fieldValue.Trim();
+            writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("OMIM_TXTindex time : " + stopwatch.ElapsedMilliseconds);
         }
     }
 }

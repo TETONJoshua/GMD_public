@@ -1,4 +1,7 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using System.Diagnostics;
 
 namespace GMD.Services
 {
@@ -6,6 +9,8 @@ namespace GMD.Services
     {
         public List<Meddra_freq> ParseMeddra()
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             List<Meddra_freq> symptomList = new List<Meddra_freq>();
 
             // Séparer les lignes en fonction des sauts de ligne
@@ -28,7 +33,29 @@ namespace GMD.Services
                 symptomList.Add(entry);
 
             }
+            stopwatch.Stop();
+            Console.WriteLine("MeddraFreq parse time : " + stopwatch.ElapsedMilliseconds);
             return symptomList;
+        }
+
+        public void indexMeddraFreqDatas(List<Meddra_freq> meddFreqDatas, IndexWriter writer)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            foreach (Meddra_freq drug in meddFreqDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("CUI", drug.CID, Field.Store.YES));
+                doc.Add(new StringField("HP", drug.Code, Field.Store.YES));
+                doc.Add(new StringField("frequence", drug.freq, Field.Store.YES));
+                doc.Add(new StringField("symptoms", drug.Symptoms, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("MeddraFreq : " + stopwatch.ElapsedMilliseconds);
+
         }
     }
 }

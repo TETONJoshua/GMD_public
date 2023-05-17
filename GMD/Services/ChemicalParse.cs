@@ -1,4 +1,7 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using System.Diagnostics;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace GMD.Services
@@ -7,6 +10,8 @@ namespace GMD.Services
     {
         public List<Chemical> ParseChemical()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            Console.WriteLine("Reading chem....");
             List<Chemical> chemicals = new List<Chemical>();
             string[] lines = File.ReadAllLines("sources/chemical.sources.v5.0.tsv");
             foreach (string line in lines)
@@ -27,9 +32,29 @@ namespace GMD.Services
 
                         chemicals.Add(entry);
                     }
+                    
                 }
             }
+            stopwatch.Stop();
+            Console.WriteLine("Chem parse time : " + stopwatch.ElapsedMilliseconds);
             return chemicals;
         }
+
+        public void indexChemicalsDatas(List<Chemical> ChemicalDatas, IndexWriter writer)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            foreach (Chemical drug in ChemicalDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("CID", drug.Chemical_Value, Field.Store.YES));
+                doc.Add(new StringField("ATC", drug.Source, Field.Store.YES));
+                doc.Add(new StringField("CIS", drug.Alias, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+            writer.Commit();
+            sw.Stop();
+            Console.WriteLine("Chem index time : " + sw.ElapsedMilliseconds);  
+        }
+
     }
 }

@@ -1,4 +1,7 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace GMD.Services
@@ -7,13 +10,14 @@ namespace GMD.Services
     {
         public List<RecordHPO> ParseHpo()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordHPO> terms = new();
             Regex term_regex = new(@"\[Term\]\n(.*?)\n\n", RegexOptions.Singleline);
             Regex id_regex = new(@"id: (.*?)\n");
             Regex name_regex = new(@"name: (.*?)\n");
             Regex def_regex = new(@"def: ""(.*?)"" \[.*?\]\n");
             Regex synonym_regex = new(@"synonym: ""(.*?)"" EXACT .*?\n");
-            Regex xref_regex = new(@"xref: (.*?)\n");
+            Regex xref_regex = new(@"xref: UMLS:(.*?)\n");
 
             using (StreamReader sr = new StreamReader(@"sources/hpo.obo"))
             {
@@ -39,7 +43,35 @@ namespace GMD.Services
                     terms.Add(term);
                 }
             }
+            stopwatch.Stop();
+            Console.WriteLine("HPO_OBO parse tim : " + stopwatch.ElapsedMilliseconds);
             return terms;
         }
+
+        public void indexHPODatas(List<RecordHPO> HPODatas, IndexWriter writer)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            foreach (RecordHPO drug in HPODatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("HP", drug.term_id, Field.Store.YES));
+                doc.Add(new StringField("name", drug.name, Field.Store.YES));
+                doc.Add(new StringField("definition", drug.definition, Field.Store.YES));
+                foreach(string xref in drug.xrefs)
+                {
+                    doc.Add(new StringField("CUI", xref, Field.Store.YES));
+                }
+                foreach (string synonym in drug.synonyms)
+                {
+                    doc.Add(new StringField("synonym", synonym, Field.Store.YES));
+                }
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
+            stopwatch.Stop();
+            Console.WriteLine("HPO index time : " + stopwatch.ElapsedMilliseconds);
+        }
+
     }
 }
