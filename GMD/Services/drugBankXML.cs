@@ -8,7 +8,7 @@ namespace GMD.Services
 {
     public class drugBankXML
     {
-        public int countNullATC, countRecord, countNullNames, countNullTox;
+        public int countNullATC, countRecord, countNullNames, countNullTox, countNullInt;
         public List<RecordDrugBankXML> parseXML()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -28,6 +28,8 @@ namespace GMD.Services
                 else { countNullNames++; }
                 if (drug["toxicity"] != null) { record.toxicity = drug["toxicity"].InnerText; }
                 else { countNullTox++; }
+                if (drug["interaction"] != null) { record.interaction = drug["interaction"].InnerText; }
+                else { countNullInt++; }
                 if (drug["synonyms"] != null)
                 {
                     foreach (XmlNode synonym in drug["synonyms"])
@@ -44,14 +46,8 @@ namespace GMD.Services
                             record.products.Add(product["name"].InnerText);
                         }
                     }
-
                 }
-                //Console.WriteLine(record.name + " : " + record.products.Count);
-                /*if (drug["interaction"]!= null)
-                {
-                    record.interaction = drug["interaction"].InnerText;
-                }*/
-
+               
                 parsedResult.Add(record);
                
 
@@ -71,6 +67,7 @@ namespace GMD.Services
                 doc.Add(new StringField("name", drug.name, Field.Store.YES));
                 doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
                 doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));
+                doc.Add(new TextField("indication", drug.indication, Field.Store.YES));
                 foreach (string product in drug.products)
                 {
                     doc.Add(new StringField("product", product, Field.Store.YES));
@@ -81,12 +78,9 @@ namespace GMD.Services
                 }
                 writer.AddDocument(doc);
             }
-
             writer.Commit();
             stopwatch.Stop();
             Console.WriteLine("XML index time : " + stopwatch.ElapsedMilliseconds);   
         }
-
-
     }
 }
