@@ -98,11 +98,24 @@ namespace GMD.Pages
 
             stopwatch.Restart();
             string symptom = "hepatitis";
-          
+            //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
-            
+            stopwatch.Restart();
+
+
+            Console.WriteLine("Found molecule from ATC : ");
+
+
+            List<string> names = QueryManager.getNameFromAtc(searcher, "L01BC08", luceneVersion);
+            foreach (string name in names)
+            {
+                QueryManager.getIndicationFromName(searcher, name, luceneVersion);
+            }
+            stopwatch.Stop();
+            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+
         }
     }
 }
