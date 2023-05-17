@@ -1,4 +1,6 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 
 namespace GMD.Services
 {
@@ -27,6 +29,21 @@ namespace GMD.Services
                 }
             }
             return list;
+        }
+
+        public void indexSqliteDatas(List<sqlite> SqliteDatas, IndexWriter writer)
+        {
+
+            foreach (sqlite drug in SqliteDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("title", drug.disease_label, Field.Store.YES));
+                doc.Add(new StringField("HP", drug.disease_id, Field.Store.YES));
+                doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
         }
     }
 }

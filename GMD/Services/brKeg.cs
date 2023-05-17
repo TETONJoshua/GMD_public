@@ -1,4 +1,6 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 using System.Diagnostics;
 
 namespace GMD.Services
@@ -34,5 +36,20 @@ namespace GMD.Services
             //Console.WriteLine(stopwatch.ElapsedMilliseconds);
             return records;
         }
+
+        public void indexKeggDatas(List<RecordBrKEG> keggDatas, IndexWriter writer)
+        {
+
+            foreach (RecordBrKEG drug in keggDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("name", drug.medicName, Field.Store.YES));
+                doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
+        }
+
     }
 }

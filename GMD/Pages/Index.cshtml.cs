@@ -48,9 +48,9 @@ namespace GMD.Pages
             indexConfig.OpenMode = OpenMode.CREATE;                             // create/overwrite index
             IndexWriter writer = new IndexWriter(indexDir, indexConfig);
 
-            brKeg dKegg = new brKeg();
-            drugBankXML dbx = new drugBankXML();
-            ChemicalParse chem = new ChemicalParse();
+            brKeg dKegg = new brKeg(); //Done
+            drugBankXML dbx = new drugBankXML(); //Done
+            ChemicalParse chem = new ChemicalParse(); //Done
             hpo hpo = new hpo();
             MeddraParse meddra = new MeddraParse();
             Meddra_Freq_Parse meddraFreqParse = new Meddra_Freq_Parse();
@@ -60,9 +60,11 @@ namespace GMD.Pages
             ominTXT ominTXT = new ominTXT();
             sqlite_Parser sqliteParser = new sqlite_Parser();
 
-
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             List<RecordBrKEG> keggDatas = dKegg.parseKeg();
             List<RecordDrugBankXML> drugBankDatas = dbx.parseXML();
+            List<Chemical> chemicalsDatas = chem.ParseChemical();
             List<RecordOmin> ominTxtDatas = ominTXT.ParseFile();
             List<RecordOminCSV> ominCsvDatas = ominCSV.ParseCsv();
             List<Meddra> meddraDatas = meddra.ParseMeddra();
@@ -70,9 +72,25 @@ namespace GMD.Pages
             List<Meddra_SE> meddraSeDatas = meddraSEParse.ParseMeddra_SE();
             List<Meddra_Indications> meddraIndicationsData = meddraIndParse.ParseMeddra();
             List<RecordHPO> hpoDatas = hpo.ParseHpo();
+            List<sqlite> sqlitesDatas = sqliteParser.ParseSqlite();
+            stopwatch.Stop();
+            TimeSpan time = stopwatch.Elapsed;
+            stopwatch.Restart();
+            dbx.indexXmlDatas(drugBankDatas, writer);
+            dKegg.indexKeggDatas(keggDatas, writer);
+            chem.indexChemicalsDatas(chemicalsDatas, writer);
+            hpo.indexHPODatas(hpoDatas, writer);
+            ominTXT.indexOminTxtDatas(ominTxtDatas, writer);
+            ominCSV.indexOminCsvDatas(ominCsvDatas, writer);
+            sqliteParser.indexSqliteDatas(sqlitesDatas, writer);
+            meddraFreqParse.indexMeddraFreqDatas(meddraFreqDatas, writer);
+            meddraSEParse.indexMeddraSEDatas(meddraSeDatas, writer);
+            meddraIndParse.indexMeddraIndicationDatas(meddraIndicationsData, writer);
+            meddra.indexMeddraDatas(meddraDatas, writer);
 
-            indexXmlDatas(drugBankDatas, writer);
-            indexKeggDatas(keggDatas, writer);
+            stopwatch.Stop();
+            TimeSpan time2 = stopwatch.Elapsed;
+            Console.WriteLine("Temps écoulé : " + time2);
             
             using DirectoryReader reader = writer.GetReader(applyAllDeletes: true);
             IndexSearcher searcher = new IndexSearcher(reader);
@@ -81,34 +99,6 @@ namespace GMD.Pages
             Console.WriteLine("Symptomes recherchés: " + symptom);
             getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom);
             
-        }
-
-        public void indexXmlDatas(List<RecordDrugBankXML> drugBankDatas, IndexWriter writer)
-        {
-            
-            foreach(RecordDrugBankXML drug in drugBankDatas)
-            {
-                Document doc = new Document();
-                doc.Add(new StringField("name", drug.name, Field.Store.YES));
-                doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
-                writer.AddDocument(doc);
-            }
-           
-            writer.Commit();
-        }
-
-        public void indexKeggDatas(List<RecordBrKEG> keggDatas, IndexWriter writer)
-        {
-            
-            foreach (RecordBrKEG drug in keggDatas)
-            {
-                Document doc = new Document();                
-                doc.Add(new StringField("name", drug.medicName, Field.Store.YES));
-                doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
-                writer.AddDocument(doc);
-            }
-           
-            writer.Commit();
         }
 
         public void getSideEffectsMoleculeNames(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom)
@@ -123,7 +113,7 @@ namespace GMD.Pages
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string foundName = resultDoc.Get("name");
                
-                Console.WriteLine($"Result : {foundName}");
+                Console.WriteLine($"Result : {foundName}, Score : {topDocs.ScoreDocs[i].Score}");
                 getAtcFromName(standardAnalyzer, searcher, foundName);
 
             }

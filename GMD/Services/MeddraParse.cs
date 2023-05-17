@@ -1,4 +1,6 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 
 namespace GMD.Services
 {
@@ -27,6 +29,20 @@ namespace GMD.Services
 
             }
             return symptomList;
+        }
+
+        public void indexMeddraDatas(List<Meddra> meddDatas, IndexWriter writer)
+        {
+
+            foreach (Meddra drug in meddDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("HP", drug.Code, Field.Store.YES));
+                doc.Add(new StringField("symptoms", drug.Symptoms, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
         }
     }
 }

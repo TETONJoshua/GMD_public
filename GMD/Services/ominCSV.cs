@@ -1,4 +1,6 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 
 namespace GMD.Services
 {
@@ -36,6 +38,21 @@ namespace GMD.Services
             }
 
             return RecordOminCSVs;
+        }
+
+        public void indexOminCsvDatas(List<RecordOminCSV> ominCSVdatas, IndexWriter writer)
+        {
+            foreach (RecordOminCSV drug in ominCSVdatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("classID", drug.ClassId, Field.Store.YES));
+                doc.Add(new StringField("CUI", drug.Cui, Field.Store.YES));
+                doc.Add(new StringField("synonyms", drug.Synonyms, Field.Store.YES));
+                doc.Add(new StringField("PreferredLabel", drug.PreferredLabel, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
         }
     }
 }

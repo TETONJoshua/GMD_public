@@ -1,4 +1,6 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 
 namespace GMD.Services
 {
@@ -54,6 +56,21 @@ namespace GMD.Services
             }
 
             return fieldValue.Trim();
+        }
+
+        public void indexOminTxtDatas(List<RecordOmin> drugBankDatas, IndexWriter writer)
+        {
+
+            foreach (RecordOmin drug in drugBankDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("title", drug.Title, Field.Store.YES));
+                doc.Add(new StringField("classID", drug.Number, Field.Store.YES));
+                doc.Add(new StringField("title", drug.ClinicalFeatures, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+
+            writer.Commit();
         }
     }
 }

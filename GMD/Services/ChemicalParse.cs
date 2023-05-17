@@ -1,4 +1,6 @@
 ﻿using GMD.Mapping;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace GMD.Services
@@ -31,5 +33,20 @@ namespace GMD.Services
             }
             return chemicals;
         }
+
+        public void indexChemicalsDatas(List<Chemical> ChemicalDatas, IndexWriter writer)
+        {
+
+            foreach (Chemical drug in ChemicalDatas)
+            {
+                Document doc = new Document();
+                doc.Add(new StringField("CID", drug.Chemical_Value, Field.Store.YES));
+                doc.Add(new StringField("ATC", drug.Source, Field.Store.YES));
+                doc.Add(new StringField("CIS", drug.Alias, Field.Store.YES));
+                writer.AddDocument(doc);
+            }
+            writer.Commit();
+        }
+
     }
 }
