@@ -41,8 +41,8 @@ namespace GMD.Services
             foreach (Meddra drug in meddDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("HP", drug.Code, Field.Store.YES));
-                doc.Add(new StringField("symptoms", drug.Symptoms, Field.Store.YES));
+                doc.Add(new TextField("CUI", drug.Code, Field.Store.YES));
+                doc.Add(new TextField("symptoms", drug.Symptoms, Field.Store.YES));
                 writer.AddDocument(doc);
             }
            

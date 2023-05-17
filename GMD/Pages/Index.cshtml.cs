@@ -114,6 +114,12 @@ namespace GMD.Pages
                 QueryManager.getIndicationFromName(searcher, name, luceneVersion);
             }
             stopwatch.Stop();
+            //GETS SIDE EFFECTS
+            Console.WriteLine("Search for CID for " + symptom);
+            QueryManager.getCIDFromMeddra(searcher, symptom, luceneVersion);
+            Console.WriteLine("Search for CUI for " + symptom);
+            QueryManager.getCUIFromMeddra(searcher, symptom, luceneVersion);
+            stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
 
         }
