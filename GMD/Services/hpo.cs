@@ -56,7 +56,7 @@ namespace GMD.Services
                 Document doc = new Document();
                 doc.Add(new StringField("HP", drug.term_id, Field.Store.YES));
                 doc.Add(new StringField("name", drug.name, Field.Store.YES));
-                doc.Add(new StringField("definition", drug.definition, Field.Store.YES));
+                doc.Add(new TextField("definition", drug.definition, Field.Store.YES));
                 foreach(string xref in drug.xrefs)
                 {
                     doc.Add(new StringField("CUI", xref, Field.Store.YES));
