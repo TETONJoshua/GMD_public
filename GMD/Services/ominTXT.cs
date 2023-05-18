@@ -85,9 +85,9 @@ namespace GMD.Services
             foreach (RecordOmin drug in drugBankDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("title", drug.Title, Field.Store.YES));
+                doc.Add(new TextField("title", drug.Title, Field.Store.YES));
                 doc.Add(new StringField("classID", drug.Number, Field.Store.YES));
-                doc.Add(new StringField("title", drug.ClinicalFeatures, Field.Store.YES));
+                doc.Add(new StringField("CS", drug.ClinicalFeatures, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

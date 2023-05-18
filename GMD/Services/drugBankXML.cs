@@ -29,6 +29,7 @@ namespace GMD.Services
                 if (drug["toxicity"] != null) { record.toxicity = drug["toxicity"].InnerText; }
                 else { countNullTox++; }
                 if (drug["interaction"] != null) { record.interaction = drug["interaction"].InnerText; }
+                if (drug["indication"] != null) { record.indication = drug["indication"].InnerText; }
                 else { countNullInt++; }
                 if (drug["synonyms"] != null)
                 {
