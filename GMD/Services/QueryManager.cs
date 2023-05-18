@@ -23,16 +23,17 @@ namespace GMD.Services
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string foundName = resultDoc.Get("name");
+                string tox= resultDoc.Get("toxicity");
 
                 Console.WriteLine($"    -> {foundName}, \n      Score : {topDocs.ScoreDocs[i].Score}");
+                Console.WriteLine($"        -> {tox}\n");
             }
-           //Console.WriteLine(i);
         }
 
         public static List<string> getNameFromAtc(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion)
         {
             Query query = new TermQuery(new Term("ATC", atcCode));
-            TopDocs topDocs = searcher.Search(query, n: 10);
+            TopDocs topDocs = searcher.Search(query, n: 100);
             string name;
             List<string> names = new List<string>();
            
