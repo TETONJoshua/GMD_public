@@ -44,7 +44,7 @@ namespace GMD.Services
             foreach (RecordBrKEG drug in keggDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("name", drug.medicName, Field.Store.YES));
+                doc.Add(new StringField("drugName", drug.medicName, Field.Store.YES));
                 doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
                 writer.AddDocument(doc);
             }

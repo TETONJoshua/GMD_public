@@ -48,7 +48,7 @@ namespace GMD.Services
                 doc.Add(new StringField("CID", drug.CID, Field.Store.YES));
                 doc.Add(new StringField("CUI", drug.Code, Field.Store.YES));
                 doc.Add(new TextField("frequence", drug.freq, Field.Store.YES));
-                doc.Add(new TextField("symptoms", drug.Symptoms, Field.Store.YES));
+                doc.Add(new TextField("name", drug.Symptoms, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

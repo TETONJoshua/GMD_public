@@ -52,7 +52,7 @@ namespace GMD.Services
                 doc.Add(new StringField("classID", drug.ClassId, Field.Store.YES));
                 doc.Add(new StringField("CUI", drug.Cui, Field.Store.YES));
                 doc.Add(new StringField("synonyms", drug.Synonyms, Field.Store.YES));
-                doc.Add(new StringField("PreferredLabel", drug.PreferredLabel, Field.Store.YES));
+                doc.Add(new StringField("lab", drug.PreferredLabel, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

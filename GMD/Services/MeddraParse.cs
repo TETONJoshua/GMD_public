@@ -40,9 +40,10 @@ namespace GMD.Services
             Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (Meddra drug in meddDatas)
             {
-                Document doc = new Document();
+                Document doc = new Document();                
                 doc.Add(new StringField("CUI", drug.Code, Field.Store.YES));
-                doc.Add(new TextField("symptoms", drug.Symptoms, Field.Store.YES));
+                //Console.WriteLine(drug.Symptoms);
+                doc.Add(new TextField("name", drug.Symptoms, Field.Store.YES));
                 writer.AddDocument(doc);
             }
            

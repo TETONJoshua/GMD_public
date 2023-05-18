@@ -97,7 +97,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
             stopwatch.Restart();
-            string symptom = "Vomiting";
+            string symptom = "headache";
             //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
             stopwatch.Stop();
@@ -108,15 +108,15 @@ namespace GMD.Pages
             Console.WriteLine("Found molecule from ATC : ");
 
 
-            List<string> names = QueryManager.getNameFromAtc(searcher, "L01BC08", luceneVersion);
+            /*List<string> names = QueryManager.getNameFromAtc(searcher, "L01BC08", luceneVersion);
             foreach (string name in names)
             {
                 QueryManager.getIndicationFromName(searcher, name, luceneVersion);
             }
-            stopwatch.Stop();
+            stopwatch.Stop();*/
 
 
-            List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
+            /*List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
 
             foreach(string cui in CUIs) {
                 if (cui.StartsWith("HP"))
@@ -127,12 +127,12 @@ namespace GMD.Pages
                 {
                     QueryManager.getGenOmimbyCUI(searcher, cui, luceneVersion);
                 }
-            }
+            }*/
 
             //GETS POTENTIAL DISEASE FROM SYMPTOM AND INDICATED DRUGS FOR THIS DISEASE
             Console.WriteLine("Search for CUI for " + symptom);
             List<string> CUIs_D =  QueryManager.getCUIFromSymptom_INDIC(standardAnalyzer, searcher, symptom, luceneVersion);
-            foreach (string CUI in CUIs_D)
+            /*foreach (string CUI in CUIs_D)
             {
                 List<string> CIDs = QueryManager.getCIDFromCUI_INDIC(searcher, CUI, luceneVersion);
                 foreach (string CID in CIDs)
@@ -147,7 +147,7 @@ namespace GMD.Pages
                         }
                     }
                 }
-            }
+            }*/
            
 
             //Console.WriteLine("Search for CUI for " + symptom);
