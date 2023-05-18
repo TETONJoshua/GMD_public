@@ -109,11 +109,49 @@ namespace GMD.Services
             return CIDs;
         }
 
-        public static List<string> getCUIFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        public static List<string> getCIDFromCUI_INDIC(IndexSearcher searcher, string CUI, LuceneVersion luceneVersion)
         {
-            QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
+            string CID;
+            Query query = new TermQuery(new Term("CUI_INDIC", CUI));
+            TopDocs topDocs = searcher.Search(query, n: 2);
+            List<string> CIDs = new List<string>();
+            Console.WriteLine($"CIDs of CUI associated to symptom : ");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                CID = resultDoc.Get("CID_INDIC");
+                if (CID != "" && CID != null)
+                {
+                    bool known = false;
+                    if (CID != "" && CID != null)
+                    {
+                        foreach (string alreadyKnown in CIDs)
+                        {
+                            if (alreadyKnown == CID)
+                            {
+                                known = true;
+                                break;
+                            }
+                        }
+                        if (!known)
+                        {
+                            Console.WriteLine($"    -> {CID}");
+                            CIDs.Add(CID);
+                        }
+                    }
+                    
+                }
+            }
+            return CIDs;
+        }
+
+
+        public static List<string> getCUIFromSymptom_INDIC(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        {
+            QueryParser parser = new QueryParser(luceneVersion, "symptoms_indic", standardAnalyzer);
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 30);
+            TopDocs topDocs = searcher.Search(query, n: 1000);
             string CUI;
             List<string> CUIs = new List<string>();
 
@@ -121,7 +159,7 @@ namespace GMD.Services
             {
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                CUI = resultDoc.Get("CUI");
+                CUI = resultDoc.Get("CUI_INDIC");
                 bool known = false;
                 if (CUI != "" && CUI != null)
                 {
@@ -141,6 +179,27 @@ namespace GMD.Services
                 }
             }
             return CUIs;
+        }
+
+        public static List<string> getATCFromCID(IndexSearcher searcher, string CID, LuceneVersion luceneVersion)
+        {
+            string atcCode;
+            Query query = new TermQuery(new Term("CID", CID));
+            TopDocs topDocs = searcher.Search(query, n: 10);
+            List<string> indications = new List<string>();
+            Console.WriteLine($"ATC FROM CID : ");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                atcCode = resultDoc.Get("ATC");
+                if (atcCode != "" && atcCode != null)
+                {
+                    Console.WriteLine($"    -> {atcCode}");
+                    indications.Add(atcCode);
+                }
+            }
+            return indications;
         }
 
         public static List<string> getCIDFromATC(Analyzer standardAnalyzer, IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion)

@@ -25,9 +25,8 @@ namespace GMD.Services
                         // Création d'un objet DataEntry et ajout à la liste
                         Chemical entry = new Chemical
                         {
-                            Chemical_Value = parts[0],
-                            Alias = parts[1],
-                            Source = parts[2] + " " + parts[3],
+                            CID = parts[1].Replace("s", "1"),
+                            ATC = parts[3]
                         };
 
                         chemicals.Add(entry);
@@ -46,9 +45,8 @@ namespace GMD.Services
             foreach (Chemical drug in ChemicalDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("CID", drug.Chemical_Value, Field.Store.YES));
-                doc.Add(new StringField("ATC", drug.Source, Field.Store.YES));
-                doc.Add(new StringField("CIS", drug.Alias, Field.Store.YES));
+                doc.Add(new StringField("CID", drug.CID, Field.Store.YES));
+                doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
                 writer.AddDocument(doc);
             }
             writer.Commit();
