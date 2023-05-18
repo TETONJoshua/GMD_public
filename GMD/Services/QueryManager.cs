@@ -1,10 +1,12 @@
 ﻿using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Util;
 using System;
+using System.Security.Cryptography;
 using System.Xml.Linq;
 
 namespace GMD.Services
@@ -73,9 +75,10 @@ namespace GMD.Services
             return indications;
         }
 
-        public static List<string> getCIDFromMeddra(IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        public static List<string> getCIDFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
-            Query query = new TermQuery(new Term("symptoms", symptom));
+            QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
+            Query query = parser.Parse(symptom);
             TopDocs topDocs = searcher.Search(query, n: 30);
             string CID;
             List<string> CIDs = new List<string>();
@@ -85,18 +88,31 @@ namespace GMD.Services
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 CID = resultDoc.Get("CID");
+                bool known = false;
                 if (CID != "" && CID != null)
                 {
-                    Console.WriteLine($"{CID} score : {topDocs.ScoreDocs[i].Score}");
-                    CIDs.Add(CID);
+                    foreach(string alreadyKnown in CIDs)
+                    {
+                        if (alreadyKnown == CID)
+                        {
+                            known = true;
+                            break;
+                        }
+                    }
+                    if (!known)
+                    {
+                        Console.WriteLine($"{CID} score : {topDocs.ScoreDocs[i].Score}");
+                        CIDs.Add(CID);
+                    }                  
                 }
             }
             return CIDs;
         }
 
-        public static List<string> getCUIFromMeddra(IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        public static List<string> getCUIFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
-            Query query = new TermQuery(new Term("symptoms", symptom));
+            QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
+            Query query = parser.Parse(symptom);
             TopDocs topDocs = searcher.Search(query, n: 30);
             string CUI;
             List<string> CUIs = new List<string>();
@@ -106,10 +122,22 @@ namespace GMD.Services
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 CUI = resultDoc.Get("CUI");
+                bool known = false;
                 if (CUI != "" && CUI != null)
                 {
-                    Console.WriteLine($"{CUI} score : {topDocs.ScoreDocs[i].Score}");
-                    CUIs.Add(CUI);
+                    foreach (string alreadyKnown in CUIs)
+                    {
+                        if (alreadyKnown == CUI)
+                        {
+                            known = true;
+                            break;
+                        }
+                    }
+                    if (!known)
+                    {
+                        Console.WriteLine($"{CUI} score : {topDocs.ScoreDocs[i].Score}");
+                        CUIs.Add(CUI);
+                    }
                 }
             }
             return CUIs;
