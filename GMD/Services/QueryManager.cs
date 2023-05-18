@@ -4,6 +4,7 @@ using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Util;
+using System;
 using System.Xml.Linq;
 
 namespace GMD.Services
@@ -70,6 +71,48 @@ namespace GMD.Services
                 }
             }
             return indications;
+        }
+
+        public static List<string> getCIDFromMeddra(IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        {
+            Query query = new TermQuery(new Term("symptoms", symptom));
+            TopDocs topDocs = searcher.Search(query, n: 30);
+            string CID;
+            List<string> CIDs = new List<string>();
+
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                CID = resultDoc.Get("CID");
+                if (CID != "" && CID != null)
+                {
+                    Console.WriteLine($"{CID} score : {topDocs.ScoreDocs[i].Score}");
+                    CIDs.Add(CID);
+                }
+            }
+            return CIDs;
+        }
+
+        public static List<string> getCUIFromMeddra(IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        {
+            Query query = new TermQuery(new Term("symptoms", symptom));
+            TopDocs topDocs = searcher.Search(query, n: 30);
+            string CUI;
+            List<string> CUIs = new List<string>();
+
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                CUI = resultDoc.Get("CUI");
+                if (CUI != "" && CUI != null)
+                {
+                    Console.WriteLine($"{CUI} score : {topDocs.ScoreDocs[i].Score}");
+                    CUIs.Add(CUI);
+                }
+            }
+            return CUIs;
         }
 
         public static List<string> getCIDFromATC(Analyzer standardAnalyzer, IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion)

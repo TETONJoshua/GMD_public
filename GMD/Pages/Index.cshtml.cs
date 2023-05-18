@@ -114,6 +114,7 @@ namespace GMD.Pages
                 QueryManager.getIndicationFromName(searcher, name, luceneVersion);
             }
             stopwatch.Stop();
+<<<<<<< HEAD
             List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
 
             foreach(string cui in CUIs) {
@@ -126,6 +127,14 @@ namespace GMD.Pages
                     QueryManager.getGenOmimbyCUI(searcher, cui, luceneVersion);
                 }
             }
+=======
+            //GETS SIDE EFFECTS
+            Console.WriteLine("Search for CID for " + symptom);
+            QueryManager.getCIDFromMeddra(searcher, symptom, luceneVersion);
+            Console.WriteLine("Search for CUI for " + symptom);
+            QueryManager.getCUIFromMeddra(searcher, symptom, luceneVersion);
+            stopwatch.Stop();
+>>>>>>> ab060c332f8cb169b6c40eefb18abced1c5a1522
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
 
         }
