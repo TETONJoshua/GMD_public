@@ -114,6 +114,18 @@ namespace GMD.Pages
                 QueryManager.getIndicationFromName(searcher, name, luceneVersion);
             }
             stopwatch.Stop();
+            List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
+
+            foreach(string cui in CUIs) {
+                if (cui.StartsWith("HP"))
+                {
+                    QueryManager.getGenOmimbyHP(searcher, cui, luceneVersion);
+                }
+                else
+                {
+                    QueryManager.getGenOmimbyCUI(searcher, cui, luceneVersion);
+                }
+            }
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
 
         }
