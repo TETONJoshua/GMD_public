@@ -1,4 +1,5 @@
 ﻿using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.QueryParsers.Classic;
@@ -148,6 +149,26 @@ namespace GMD.Services
             Query query = new TermQuery(new Term("HP", HP));
             TopDocs topDocs = searcher.Search(query, n: 20);
             List<string> disease = new List<string>();
+            Console.WriteLine($"Linked disease : ");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                //read back a doc from results
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                title = resultDoc.Get("title");
+                if (title != "" && title != null)
+                {
+                    Console.WriteLine($"    -> {title}");
+                }
+            }
+        }
+
+        public static void getDiseaseByTitle(Analyzer standardAnalyzer, IndexSearcher searcher, string disease, LuceneVersion luceneVersion)
+        {
+            string cID, title;
+            QueryParser parser = new QueryParser(luceneVersion, "title", standardAnalyzer);
+            Query query = parser.Parse(disease);
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            List<string> diseases = new List<string>();
             Console.WriteLine($"Linked disease : ");
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
