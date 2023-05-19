@@ -97,7 +97,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
             stopwatch.Restart();
-            string symptom = "blindness";
+            string symptom = "Head pain light sensitive";
             //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
             stopwatch.Stop();

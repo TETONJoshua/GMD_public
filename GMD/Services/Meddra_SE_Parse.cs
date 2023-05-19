@@ -47,8 +47,8 @@ namespace GMD.Services
             foreach (Meddra_SE drug in meddSEDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("CID", drug.CID, Field.Store.YES));
-                doc.Add(new StringField("CUI", drug.Code, Field.Store.YES));
+                doc.Add(new StringField("CID_SE", drug.CID, Field.Store.YES));
+                doc.Add(new StringField("CUI_SE", drug.Code, Field.Store.YES));
                 doc.Add(new TextField("name_SE", drug.Symptoms, Field.Store.YES));
                 writer.AddDocument(doc);
             }
