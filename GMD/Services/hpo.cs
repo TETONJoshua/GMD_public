@@ -66,7 +66,7 @@ namespace GMD.Services
                     Document doc = new Document();
                     doc.Add(new StringField("HP", data.term_id, Field.Store.YES));
                     doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
-                    //doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
+                    doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
                     doc.Add(new TextField("definition", data.definition, Field.Store.YES));
                     doc.Add(new StringField("CUI", data.xrefs[0], Field.Store.YES));
 
@@ -75,7 +75,7 @@ namespace GMD.Services
                     {
                         turboSyno += synonym;
                     }
-                    doc.Add(new TextField("symptomsfqfefe", turboSyno, Field.Store.YES));
+                    doc.Add(new TextField("symptoms", turboSyno, Field.Store.YES));
                     writer.AddDocument(doc);
                 }
                

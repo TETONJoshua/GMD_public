@@ -97,7 +97,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
             stopwatch.Restart();
-            string symptom = "headache";
+            string symptom = "absence of the pericardium";
             //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
             stopwatch.Stop();

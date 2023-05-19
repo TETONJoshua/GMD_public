@@ -48,7 +48,7 @@ namespace GMD.Services
                 name = resultDoc.Get("drugName");
                 if (name != "" && name != null)
                 {
-                    Console.WriteLine($"    -> Suggested drug :");
+                    Console.WriteLine($"    -> Suggested drug :             Score : {topDocs.ScoreDocs[i].Score}");
                     Console.WriteLine($"        -> NAME : {name}");
                     Console.WriteLine($"        -> CID : {CID}");
                     Console.WriteLine($"        -> ATC : {atcCode}");
@@ -160,7 +160,7 @@ namespace GMD.Services
         {
             QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 10);
+            TopDocs topDocs = searcher.Search(query, n: 100);
             string CUI;
             List<string> CUIs = new List<string>();
 
@@ -173,7 +173,7 @@ namespace GMD.Services
                 bool known = false;
                 if (CUI != "" && CUI != null)
                 {
-                    Console.WriteLine(CUI);
+                    //Console.WriteLine(CUI);
                     foreach (string alreadyKnown in CUIs)
                     {
                         if (alreadyKnown == CUI)
@@ -263,11 +263,12 @@ namespace GMD.Services
             Query query = new TermQuery(new Term("CUI", UMLS));
             TopDocs topDocs = searcher.Search(query, n: 10);
             List<string> names = new List<string>();
-
+            string def = "";
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string name = resultDoc.Get("name");
+                string definition = resultDoc.Get("definition");
                 bool known = false;
                 foreach (string nameKnown in names)
                 {
@@ -276,11 +277,15 @@ namespace GMD.Services
                         known = true;
                     } 
                 }
-                if (name != null && !known)
+                if (definition != null)
                 {
-                    Console.WriteLine(UMLS + " : " + name);
+                    def = definition;
+                }
+                if (name != null && !known)
+                {                    
                     names.Add(name);
                 }
+                
                 /*if (name != "" && name != null)
                 {
                     Console.WriteLine($"-> DISEASE : {name}                   Score : {score}");
@@ -291,6 +296,19 @@ namespace GMD.Services
                     Hpo.Add(name);
                 }*/
             }
+            string synon = "";
+            if (names.Count > 0)
+            {
+                Console.WriteLine($"-> DISEASE : {names[0]}                   Score : {score}");
+                Console.WriteLine($"    -> CUI : {UMLS}");
+                for (int i = 1; i < names.Count;i++)
+                {
+                    synon += names[i] + " ; ";
+                }
+                Console.WriteLine($"    -> synonyms : {synon}");
+                Console.WriteLine($"    -> definition : {def}");
+            }
+            
             return names;
         }
 
