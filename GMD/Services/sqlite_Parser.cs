@@ -16,14 +16,41 @@ namespace GMD.Services
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] data = line.Split(',');
+                    string[] data = line.Split(", ");
                     if (data.Length >= 3)
                     {
+                        string diseaseFreq = data[8];
+                        switch (diseaseFreq)
+                        {
+                            case "HP:0040280":
+                                diseaseFreq = "0";
+                                break;
+                            case "HP:0040281":
+                                diseaseFreq = "1";
+                                break;
+                            case "HP:0040282":
+                                diseaseFreq = "2";
+                                break;
+                            case "HP:0040283":
+                                diseaseFreq = "3";
+                                break;
+                            case "HP:0040284":
+                                diseaseFreq = "4";
+                                break;
+                            case "HP:0040285":
+                                diseaseFreq = "5";
+                                break;
+                            default:
+                                break;
+                        }
+
+
                         sqlite entry = new sqlite
                         {
                             disease_db = data[0],
-                            disease_id = data[5],
-                            disease_label = data[2]
+                            disease_id = data[4],
+                            disease_label = data[2],
+                            diseaseFreq = diseaseFreq,
                         };
 
                         list.Add(entry);
@@ -41,9 +68,11 @@ namespace GMD.Services
             foreach (sqlite drug in SqliteDatas)
             {
                 Document doc = new Document();
-                doc.Add(new TextField("title", drug.disease_label, Field.Store.YES));
-                doc.Add(new StringField("HP", drug.disease_id, Field.Store.YES));
+                doc.Add(new TextField("name", drug.disease_label, Field.Store.YES));
+                
+                doc.Add(new StringField("HP", drug.disease_id.Trim(), Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
+                doc.Add(new StringField("diseaseFrequency", drug.diseaseFreq, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

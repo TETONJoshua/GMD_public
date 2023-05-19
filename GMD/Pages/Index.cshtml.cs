@@ -97,7 +97,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
             stopwatch.Restart();
-            string symptom = "absence of the pericardium";
+            string symptom = "blindness";
             //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
             stopwatch.Stop();
@@ -131,7 +131,7 @@ namespace GMD.Pages
 
             //GETS POTENTIAL DISEASE FROM SYMPTOM AND INDICATED DRUGS FOR THIS DISEASE
             Console.WriteLine("Search for CUI for " + symptom);
-            List<string> CUIs_D =  QueryManager.getCUIFromSymptom_INDIC(standardAnalyzer, searcher, symptom, luceneVersion);
+            List<string> CUIs_D =  QueryManager.getUMLSFromSymptom_INDIC(standardAnalyzer, searcher, symptom, luceneVersion);
             /*foreach (string CUI in CUIs_D)
             {
                 List<string> CIDs = QueryManager.getCIDFromCUI_INDIC(searcher, CUI, luceneVersion);

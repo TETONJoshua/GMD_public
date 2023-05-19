@@ -47,7 +47,7 @@ namespace GMD.Services
                         //Console.WriteLine(xref_match.Groups[1].Value);
                         term_is_a.Add(isa_match.Groups[1].Value);
                     }
-                    RecordHPO term = new(term_id, term_name, term_def, term_synonyms, term_xrefs);
+                    RecordHPO term = new(term_id, term_name, term_def, term_synonyms, term_xrefs, term_is_a);
                     terms.Add(term);
                 }
             }
@@ -63,19 +63,25 @@ namespace GMD.Services
             {
                 if(data.xrefs.Count == 1)
                 {
+
                     Document doc = new Document();
                     doc.Add(new StringField("HP", data.term_id, Field.Store.YES));
-                    doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
-                    doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
+                    //doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
+                    //doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
                     doc.Add(new TextField("definition", data.definition, Field.Store.YES));
                     doc.Add(new StringField("CUI", data.xrefs[0], Field.Store.YES));
-
                     string turboSyno = "";
                     foreach (string synonym in data.synonyms)
                     {
-                        turboSyno += synonym;
+                        turboSyno += synonym + " ; ";
                     }
+                    turboSyno += data.name + " ; ";
+                    turboSyno += data.definition + " ; ";
                     doc.Add(new TextField("symptoms", turboSyno, Field.Store.YES));
+                    foreach (string isa in data.is_a)
+                    {
+                        doc.Add(new StringField("HP", isa, Field.Store.YES));
+                    }
                     writer.AddDocument(doc);
                 }
                

@@ -156,27 +156,29 @@ namespace GMD.Services
         }
 
 
-        public static List<string> getCUIFromSymptom_INDIC(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        public static List<string> getUMLSFromSymptom_INDIC(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
             QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 100);
-            string CUI;
-            List<string> CUIs = new List<string>();
+            TopDocs topDocs = searcher.Search(query, n: 5);
+            string UMLS;
+            List<string> UMLSs = new List<string>();
 
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                CUI = resultDoc.Get("CUI");
-                
+                UMLS = resultDoc.Get("CUI");
+                string symptoms = resultDoc.Get("symptoms");
+                string definition = resultDoc.Get("definition");
+                //Console.WriteLine(symptoms);
                 bool known = false;
-                if (CUI != "" && CUI != null)
+                if (UMLS != "" && UMLS != null)
                 {
                     //Console.WriteLine(CUI);
-                    foreach (string alreadyKnown in CUIs)
+                    foreach (string alreadyKnown in UMLSs)
                     {
-                        if (alreadyKnown == CUI)
+                        if (alreadyKnown == UMLS)
                         {
                             known = true;
                             
@@ -185,9 +187,12 @@ namespace GMD.Services
                     }
                     if (!known)
                     {
-                        if (getCUIFromUMLS(searcher, CUI, luceneVersion, topDocs.ScoreDocs[i].Score).Count != 0)
+                        Console.WriteLine("Found from Symptoms : " + symptoms + $"                   Score : {topDocs.ScoreDocs[i].Score} ; " + " UMLS/CUI : " + UMLS) ;
+                        Console.WriteLine("     -> Definition : " + definition ) ;
+                        Console.WriteLine("     -> Assiociated to deseases : ");
+                        if (getNameFromUMLS(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score).Count != 0)
                         {
-                            if (getCIDFromCUI_INDIC(searcher, CUI, luceneVersion, topDocs.ScoreDocs[i].Score).Count != 0)
+                            if (getCIDFromCUI_INDIC(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score).Count != 0)
                             {
                                 //Console.WriteLine($"{CUI} score : {topDocs.ScoreDocs[i].Score}");
                                 
@@ -204,15 +209,99 @@ namespace GMD.Services
                         }
                         else
                         {
-                            Console.WriteLine($"\n-> CUI {CUI} has been found to match your symptoms with a score of {topDocs.ScoreDocs[i].Score}, but no diseases are related to it         \n");
+                            Console.WriteLine($"\n-> CUI {UMLS} has been found to match your symptoms with a score of {topDocs.ScoreDocs[i].Score}, but no diseases are related to it         \n");
                         }
-                        CUIs.Add(CUI);
+                        UMLSs.Add(UMLS);
                     }
                 }
             }
-            return CUIs;
+            return UMLSs;
         }
 
+        public static List<string> getNameFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, float score)
+        {
+            //string name="", classID="", HP="", def = "", synonyms="";
+            Query query = new TermQuery(new Term("CUI", UMLS));
+            TopDocs topDocs = searcher.Search(query, n:10);
+            List<string> names = new List<string>();
+            List<string> results = new List<string>();
+            string def = "";
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                string name = resultDoc.Get("name");
+                
+                //Console.WriteLine(definition);
+                string hp = resultDoc.Get("HP");
+                //Console.WriteLine(hp);
+                bool known = false;
+                List<string> HPAnnotNames =new List<string>();
+                if (hp != null)
+                {
+                    HPAnnotNames = getNamesFromHP(searcher, hp, luceneVersion, score);
+                    results.AddRange(HPAnnotNames);
+                }                
+                foreach (string nameKnown in names)
+                {
+                    if (name == nameKnown)
+                    {
+                        known = true;
+                    }
+                }
+                if (name != null && !known)
+                {
+                    names.Add(name);
+                }
+            }
+            results.AddRange(names);
+            string syn = "";
+            
+            if(names.Count > 0)
+            {
+                foreach (string name in names)
+                {
+                    syn += name + " ; ";
+                }
+
+                Console.WriteLine($"            -> DISEASE : {names[0]}");
+                Console.WriteLine($"                -> Synonyms : {syn}");
+            }
+            
+
+            return results;
+        }
+
+        public static List<string> getNamesFromHP(IndexSearcher searcher, string HP, LuceneVersion luceneVersion, float score)
+        {
+            Query query = new TermQuery(new Term("HP", HP));
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            Dictionary<string, int> names = new  Dictionary<string, int>();
+            for (int i = 0; i< topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                string name = resultDoc.Get("name");
+                int freq = 7;
+                string strFreq = resultDoc.Get("diseaseFrequency");
+                if (strFreq != null && strFreq != "None")
+                {
+                    //Console.WriteLine(strFreq);
+                    freq = Int32.Parse(strFreq);
+                }
+                if (name != null)
+                {                    
+                    names.Add(name, freq);
+                }
+            }
+            var sortednames = names.OrderBy(x => x.Value);
+            List<string> returnedNames = new List<string>();    
+            foreach (var name in sortednames)
+            {
+                returnedNames.Add(name.Key);
+                Console.WriteLine($"            -> DISEASE : {name.Key}         Frequency : {name.Value}");
+            }
+
+            return returnedNames;
+        }
         public static List<string> getATCFromCID(IndexSearcher searcher, string CID, LuceneVersion luceneVersion, string CUI, float score)
         {
             string atcCode;
@@ -257,60 +346,7 @@ namespace GMD.Services
             return atcCodes;
         }
 
-        public static List<string> getCUIFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, float score)
-        {
-            //string name="", classID="", HP="", def = "", synonyms="";
-            Query query = new TermQuery(new Term("CUI", UMLS));
-            TopDocs topDocs = searcher.Search(query, n: 10);
-            List<string> names = new List<string>();
-            string def = "";
-            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
-            {
-                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                string name = resultDoc.Get("name");
-                string definition = resultDoc.Get("definition");
-                bool known = false;
-                foreach (string nameKnown in names)
-                {
-                    if (name == nameKnown)
-                    {
-                        known = true;
-                    } 
-                }
-                if (definition != null)
-                {
-                    def = definition;
-                }
-                if (name != null && !known)
-                {                    
-                    names.Add(name);
-                }
-                
-                /*if (name != "" && name != null)
-                {
-                    Console.WriteLine($"-> DISEASE : {name}                   Score : {score}");
-                    Console.WriteLine($"    -> CUI : {UMLS}");
-                    Console.WriteLine($"    -> definition : {def}");
-                    Console.WriteLine($"    -> HP : {HP}");
-                    Console.WriteLine($"    -> Class ID : {classID}");
-                    Hpo.Add(name);
-                }*/
-            }
-            string synon = "";
-            if (names.Count > 0)
-            {
-                Console.WriteLine($"-> DISEASE : {names[0]}                   Score : {score}");
-                Console.WriteLine($"    -> CUI : {UMLS}");
-                for (int i = 1; i < names.Count;i++)
-                {
-                    synon += names[i] + " ; ";
-                }
-                Console.WriteLine($"    -> synonyms : {synon}");
-                Console.WriteLine($"    -> definition : {def}");
-            }
-            
-            return names;
-        }
+ 
 
         public static void getGenOmimbyCUI(IndexSearcher searcher, string classID, LuceneVersion luceneVersion)
         {
