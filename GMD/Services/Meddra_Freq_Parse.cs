@@ -45,10 +45,10 @@ namespace GMD.Services
             foreach (Meddra_freq drug in meddFreqDatas)
             {
                 Document doc = new Document();
-                doc.Add(new TextField("CID", drug.CID, Field.Store.YES));
-                doc.Add(new TextField("CUI", drug.Code, Field.Store.YES));
+                doc.Add(new StringField("CID_SE", drug.CID, Field.Store.YES));
+                doc.Add(new StringField("CUI_SE", drug.Code, Field.Store.YES));
                 doc.Add(new TextField("frequence", drug.freq, Field.Store.YES));
-                doc.Add(new TextField("symptoms", drug.Symptoms, Field.Store.YES));
+                doc.Add(new TextField("name_SE", drug.Symptoms, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

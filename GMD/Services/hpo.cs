@@ -3,6 +3,7 @@ using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace GMD.Services
 {
@@ -18,6 +19,7 @@ namespace GMD.Services
             Regex def_regex = new(@"def: ""(.*?)"" \[.*?\]\n");
             Regex synonym_regex = new(@"synonym: ""(.*?)"" EXACT .*?\n");
             Regex xref_regex = new(@"xref: UMLS:(.*?)\n");
+            Regex is_a_regex = new(@"is_a: HP:(.*?)\n");
 
             using (StreamReader sr = new StreamReader(@"sources/hpo.obo"))
             {
@@ -36,10 +38,16 @@ namespace GMD.Services
                     List<string> term_xrefs = new();
                     foreach (Match xref_match in xref_regex.Matches(term_text))
                     {
+                        //Console.WriteLine(xref_match.Groups[1].Value);
                         term_xrefs.Add(xref_match.Groups[1].Value);
                     }
                     List<string> term_is_a = new();
-                    RecordHPO term = new(term_id, term_name, term_def, term_synonyms, term_xrefs);
+                    foreach (Match isa_match in is_a_regex.Matches(term_text))
+                    {
+                        //Console.WriteLine(xref_match.Groups[1].Value);
+                        term_is_a.Add(isa_match.Groups[1].Value);
+                    }
+                    RecordHPO term = new(term_id, term_name, term_def, term_synonyms, term_xrefs, term_is_a);
                     terms.Add(term);
                 }
             }
@@ -51,21 +59,32 @@ namespace GMD.Services
         public void indexHPODatas(List<RecordHPO> HPODatas, IndexWriter writer)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
-            foreach (RecordHPO drug in HPODatas)
+            foreach (RecordHPO data in HPODatas)
             {
-                Document doc = new Document();
-                doc.Add(new StringField("HP", drug.term_id, Field.Store.YES));
-                doc.Add(new StringField("name", drug.name, Field.Store.YES));
-                doc.Add(new TextField("definition", drug.definition, Field.Store.YES));
-                foreach(string xref in drug.xrefs)
+                if(data.xrefs.Count == 1)
                 {
-                    doc.Add(new StringField("CUI", xref, Field.Store.YES));
+
+                    Document doc = new Document();
+                    doc.Add(new StringField("HP", data.term_id, Field.Store.YES));
+                    //doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
+                    //doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
+                    doc.Add(new TextField("definition", data.definition, Field.Store.YES));
+                    doc.Add(new StringField("CUI", data.xrefs[0], Field.Store.YES));
+                    string turboSyno = "";
+                    foreach (string synonym in data.synonyms)
+                    {
+                        turboSyno += synonym + " ; ";
+                    }
+                    turboSyno += data.name + " ; ";
+                    turboSyno += data.definition + " ; ";
+                    doc.Add(new TextField("symptoms", turboSyno, Field.Store.YES));
+                    foreach (string isa in data.is_a)
+                    {
+                        doc.Add(new StringField("HP", isa, Field.Store.YES));
+                    }
+                    writer.AddDocument(doc);
                 }
-                foreach (string synonym in drug.synonyms)
-                {
-                    doc.Add(new StringField("synonym", synonym, Field.Store.YES));
-                }
-                writer.AddDocument(doc);
+               
             }
 
             writer.Commit();

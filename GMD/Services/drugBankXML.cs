@@ -65,7 +65,7 @@ namespace GMD.Services
             foreach (RecordDrugBankXML drug in drugBankDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("name", drug.name, Field.Store.YES));
+                doc.Add(new StringField("drugName", drug.name, Field.Store.YES));
                 doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
                 doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));
                 doc.Add(new TextField("indication", drug.indication, Field.Store.YES));
