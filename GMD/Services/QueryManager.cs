@@ -44,13 +44,14 @@ namespace GMD.Services
             TopDocs topDocs = searcher.Search(query, n: 5000);
             int i;
             Console.WriteLine($"Molecules that can cause this as a side effects (from meddra) :");
-            string CID_SE, CUI_SE;
+            string CID_SE, CUI_SE, frequence;
             List<string> CID_SEs = new List<string>();
             for (i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 CID_SE = resultDoc.Get("CID_SE");
                 CUI_SE = resultDoc.Get("CUI_SE");
+                frequence = resultDoc.Get("frequence");
                 bool known = false;
                 if (CID_SE != "" && CID_SE != null)
                 {
@@ -65,13 +66,14 @@ namespace GMD.Services
                     if (!known)
                     {
                         CID_SEs.Add(CID_SE);
-                        getATCFromCIDForSE(searcher, CID_SE, luceneVersion, CUI_SE, 0);
+                        
+                        getATCFromCIDForSE(searcher, CID_SE, luceneVersion, CUI_SE, 0, frequence);
                     }
                 }
             }
         }
 
-        public static List<string> getATCFromCIDForSE(IndexSearcher searcher, string CID, LuceneVersion luceneVersion, string CUI, float score)
+        public static List<string> getATCFromCIDForSE(IndexSearcher searcher, string CID, LuceneVersion luceneVersion, string CUI, float score, string frequence)
         {
             string atcCode;
             Query query = new TermQuery(new Term("CID", CID));
@@ -84,7 +86,7 @@ namespace GMD.Services
                 atcCode = resultDoc.Get("ATC");
                 if (atcCode != "" && atcCode != null)
                 {
-                    if (getNameFromAtcForSE(searcher, atcCode, luceneVersion, CUI, CID, score).Count != 0)
+                    if (getNameFromAtcForSE(searcher, atcCode, luceneVersion, CUI, CID, score, frequence).Count != 0)
                     {
                         indications.Add(atcCode);
                     }
@@ -93,7 +95,7 @@ namespace GMD.Services
             }
             return indications;
         }
-        public static List<string> getNameFromAtcForSE(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion, string CUI, string CID, float score)
+        public static List<string> getNameFromAtcForSE(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion, string CUI, string CID, float score, string frequence)
         {
             Query query = new TermQuery(new Term("ATC", atcCode));
             TopDocs topDocs = searcher.Search(query, n: 2);
@@ -110,6 +112,7 @@ namespace GMD.Services
                     Console.WriteLine($"            -> NAME : {name}");
                     Console.WriteLine($"            -> CID : {CID}");
                     Console.WriteLine($"            -> ATC : {atcCode}");
+                    Console.WriteLine($"            -> FREQ : {frequence}");
                     names.Add(name);
 
                 }
