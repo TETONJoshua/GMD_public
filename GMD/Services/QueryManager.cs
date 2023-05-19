@@ -23,10 +23,9 @@ namespace GMD.Services
             Query query = parser.Parse(symptom);
             TopDocs topDocs = searcher.Search(query, n: 10);         //indicate we want the first 10 results
             int i;
-            Console.WriteLine($"Molcules that can cause this as a side effects :");
+            Console.WriteLine($"Molecules that can cause this as a side effects :");
             for (i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
-                //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string foundName = resultDoc.Get("drugName");
                 string tox= resultDoc.Get("toxicity");
@@ -34,7 +33,90 @@ namespace GMD.Services
                 Console.WriteLine($"    -> {foundName}, \n      Score : {topDocs.ScoreDocs[i].Score}");
                 Console.WriteLine($"        -> {tox}\n");
             }
+            getCIDfromSE(standardAnalyzer, searcher, symptom, luceneVersion);
         }
+        public static void getCIDfromSE(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        {
+            Console.WriteLine("Researched symptoms : " + symptom);
+            QueryParser parser = new QueryParser(luceneVersion, "name_SE", standardAnalyzer);
+
+            Query query = parser.Parse(symptom);
+            TopDocs topDocs = searcher.Search(query, n: 5000);
+            int i;
+            Console.WriteLine($"Molecules that can cause this as a side effects (from meddra) :");
+            string CID_SE, CUI_SE;
+            List<string> CID_SEs = new List<string>();
+            for (i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                CID_SE = resultDoc.Get("CID_SE");
+                CUI_SE = resultDoc.Get("CUI_SE");
+                bool known = false;
+                if (CID_SE != "" && CID_SE != null)
+                {
+                    foreach (string alreadyKnown in CID_SEs)
+                    {
+                        if (alreadyKnown == CID_SE)
+                        {
+                            known = true;
+                            break;
+                        }
+                    }
+                    if (!known)
+                    {
+                        CID_SEs.Add(CID_SE);
+                        getATCFromCIDForSE(searcher, CID_SE, luceneVersion, CUI_SE, 0);
+                    }
+                }
+            }
+        }
+
+        public static List<string> getATCFromCIDForSE(IndexSearcher searcher, string CID, LuceneVersion luceneVersion, string CUI, float score)
+        {
+            string atcCode;
+            Query query = new TermQuery(new Term("CID", CID));
+            TopDocs topDocs = searcher.Search(query, n: 10);
+            List<string> indications = new List<string>();
+
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {  
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                atcCode = resultDoc.Get("ATC");
+                if (atcCode != "" && atcCode != null)
+                {
+                    if (getNameFromAtcForSE(searcher, atcCode, luceneVersion, CUI, CID, score).Count != 0)
+                    {
+                        indications.Add(atcCode);
+                    }
+
+                }
+            }
+            return indications;
+        }
+        public static List<string> getNameFromAtcForSE(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion, string CUI, string CID, float score)
+        {
+            Query query = new TermQuery(new Term("ATC", atcCode));
+            TopDocs topDocs = searcher.Search(query, n: 2);
+            string name;
+            List<string> names = new List<string>();
+
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                name = resultDoc.Get("drugName");
+                if (name != "" && name != null)
+                {
+                    Console.WriteLine($"         -> This drug have this symptom as side effect :             Score : {topDocs.ScoreDocs[i].Score}");
+                    Console.WriteLine($"            -> NAME : {name}");
+                    Console.WriteLine($"            -> CID : {CID}");
+                    Console.WriteLine($"            -> ATC : {atcCode}");
+                    names.Add(name);
+
+                }
+            }
+            return names;
+        }
+
 
         public static List<string> getNameFromAtc(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion, string CUI, string CID, float score)
         {
@@ -258,20 +340,6 @@ namespace GMD.Services
             }
             results.AddRange(names);
             string syn = "";
-            
-            /*if(names.Count > 0)
-            {
-                foreach (string name in names)
-                {
-                    syn += name + " ; ";
-                }
-
-                Console.WriteLine($"            -> DISEASE : {names[0]}");
-                Console.WriteLine($"                -> Synonyms : {syn}");
-            }*/
-            
-            
-
             return results;
         }
 
