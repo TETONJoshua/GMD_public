@@ -25,7 +25,7 @@ namespace GMD.Services
                         continue; // Ignore la première ligne (en-têtes des colonnes)
                     }
 
-                    string[] values = line.Split(',');
+                    string[] values = line.Split('!');
 
                     RecordOminCSV RecordOminCSV = new RecordOminCSV
                     {

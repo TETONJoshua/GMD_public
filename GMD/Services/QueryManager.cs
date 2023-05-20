@@ -239,11 +239,17 @@ namespace GMD.Services
                 //Console.WriteLine(hp);
                 bool known = false;
                 List<string> HPAnnotNames =new List<string>();
+                List<string> OmimNames =new List<string>();
                 if (hp != null)
                 {
                     HPAnnotNames = getNamesFromHP(searcher, hp, luceneVersion, score, standardAnalyzer);
                     results.AddRange(HPAnnotNames);
-                }                
+                }
+                OmimNames = getTitleFromUMLS(searcher, "C3553816", luceneVersion, standardAnalyzer);
+                if(OmimNames != null)
+                {
+                    results.AddRange(OmimNames);
+                }
                 foreach (string nameKnown in names)
                 {
                     if (name == nameKnown)
@@ -258,17 +264,6 @@ namespace GMD.Services
             }
             results.AddRange(names);
             string syn = "";
-            
-            /*if(names.Count > 0)
-            {
-                foreach (string name in names)
-                {
-                    syn += name + " ; ";
-                }
-
-                Console.WriteLine($"            -> DISEASE : {names[0]}");
-                Console.WriteLine($"                -> Synonyms : {syn}");
-            }*/
             
             
 
@@ -297,15 +292,62 @@ namespace GMD.Services
                 }
             }
             var sortednames = names.OrderBy(x => x.Value);
-            List<string> returnedNames = new List<string>();    
+            List<string> returnedNames = new List<string>();  
             foreach (var name in sortednames)
             {
                 returnedNames.Add(name.Key);
                 Console.WriteLine($"            -> DISEASE : {name.Key}         Frequency : {name.Value}");
                 getTreatmentsForDisease(searcher,  name.Key, luceneVersion, standardAnalyzer);
             }
-
             return returnedNames;
+        }
+
+        public static List<string> getTitleFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
+        {
+            Query query = new TermQuery(new Term("CUI", UMLS));
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            List<string> names = new List<string>();
+            List<string> titleOmim = new List<string>();
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                string classID = resultDoc.Get("classID");
+                string strDisease = resultDoc.Get("name");
+
+                if(strDisease != null && strDisease != "")
+                {
+                    names.Add(strDisease);
+                }
+            }
+            foreach (var name in names)
+            {
+                Console.WriteLine($"            -> DISEASE : {name}");
+            }
+            return names;
+        }
+
+        public static List<string> getOmimFromSymptoms(IndexSearcher searcher, string symptoms, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
+        {
+            
+            QueryParser  parser = new QueryParser(luceneVersion, "symptomsOmim", standardAnalyzer);
+            Query query = parser.Parse(symptoms);
+            parser.DefaultOperator = QueryParser.AND_OPERATOR;
+            TopDocs topDocs = searcher.Search(query, n: 20);
+            List<string> names = new List<string>();
+            Console.WriteLine("Found from Symptoms : " + symptoms + "\n");
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                string title = resultDoc.Get("name");
+                string classID = resultDoc.Get("classID");
+                if (title != "" && title != null)
+                {
+                    names.Add(title);
+                    Console.WriteLine("     -> Assiociated to genetic deseases : " + title + $" Score : { topDocs.ScoreDocs[i].Score}; " + " Class ID : " + classID + "\n");
+                }
+            }
+
+            return names;
         }
 
         public static List<string> getTreatmentsForDisease(IndexSearcher searcher, string diseaseName, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
@@ -372,66 +414,6 @@ namespace GMD.Services
                 }
             }
             return atcCodes;
-        }
-
- 
-
-        public static void getGenOmimbyCUI(IndexSearcher searcher, string classID, LuceneVersion luceneVersion)
-        {
-            string cID, title;
-            Query query = new TermQuery(new Term("Number", classID));
-            TopDocs topDocs = searcher.Search(query, n: 20);
-            List<string> disease = new List<string>();
-            Console.WriteLine($"Linked disease : ");
-            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
-            {
-                //read back a doc from results
-                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                title = resultDoc.Get("title");
-                if (title != "" && title != null)
-                {
-                    Console.WriteLine($"    -> {title}");
-                }
-            }
-        }
-
-        public static void getGenOmimbyHP(IndexSearcher searcher, string HP, LuceneVersion luceneVersion)
-        {
-            string cID, title;
-            Query query = new TermQuery(new Term("HP", HP));
-            TopDocs topDocs = searcher.Search(query, n: 20);
-            List<string> disease = new List<string>();
-            Console.WriteLine($"Linked disease : ");
-            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
-            {
-                //read back a doc from results
-                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                title = resultDoc.Get("title");
-                if (title != "" && title != null)
-                {
-                    Console.WriteLine($"    -> {title}");
-                }
-            }
-        }
-
-        public static void getDiseaseByTitle(Analyzer standardAnalyzer, IndexSearcher searcher, string disease, LuceneVersion luceneVersion)
-        {
-            string cID, title;
-            QueryParser parser = new QueryParser(luceneVersion, "title", standardAnalyzer);
-            Query query = parser.Parse(disease);
-            TopDocs topDocs = searcher.Search(query, n: 20);
-            List<string> diseases = new List<string>();
-            Console.WriteLine($"Linked disease : ");
-            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
-            {
-                //read back a doc from results
-                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                title = resultDoc.Get("title");
-                if (title != "" && title != null)
-                {
-                    Console.WriteLine($"    -> {title}");
-                }
-            }
         }
     }
 }

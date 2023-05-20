@@ -59,6 +59,7 @@ namespace GMD.Services
             }
             stopwatch.Stop();
             Console.WriteLine("SQLITE parse time : " + stopwatch.ElapsedMilliseconds);
+            list.DistinctBy(x => x.disease_db).ToList();
             return list;
         }
 
