@@ -97,24 +97,26 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
             stopwatch.Restart();
-            string symptom = "hepatitis";
+            string symptom = "Head pain light sensitive";
             //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
 
-
+             
             Console.WriteLine("Found molecule from ATC : ");
 
 
-            List<string> names = QueryManager.getNameFromAtc(searcher, "L01BC08", luceneVersion);
+            /*List<string> names = QueryManager.getNameFromAtc(searcher, "L01BC08", luceneVersion);
             foreach (string name in names)
             {
                 QueryManager.getIndicationFromName(searcher, name, luceneVersion);
             }
-            stopwatch.Stop();
-            List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
+            stopwatch.Stop();*/
+
+
+            /*List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
 
             foreach(string cui in CUIs) {
                 if (cui.StartsWith("HP"))
@@ -125,7 +127,32 @@ namespace GMD.Pages
                 {
                     QueryManager.getGenOmimbyCUI(searcher, cui, luceneVersion);
                 }
-            }
+            }*/
+
+            //GETS POTENTIAL DISEASE FROM SYMPTOM AND INDICATED DRUGS FOR THIS DISEASE
+            Console.WriteLine("Search for CUI for " + symptom);
+            List<string> CUIs_D =  QueryManager.getUMLSFromSymptom_INDIC(standardAnalyzer, searcher, symptom, luceneVersion);
+            /*foreach (string CUI in CUIs_D)
+            {
+                List<string> CIDs = QueryManager.getCIDFromCUI_INDIC(searcher, CUI, luceneVersion);
+                foreach (string CID in CIDs)
+                {
+                    List<string> ATCs = QueryManager.getATCFromCID(searcher, CID, luceneVersion);
+                    foreach (string ATC in ATCs)
+                    {
+                        List<string> names_INDIC = QueryManager.getNameFromAtc(searcher, ATC, luceneVersion);
+                        foreach (string name  in names_INDIC)
+                        {
+                            List<string> indications = QueryManager.getIndicationFromName(searcher, name, luceneVersion);
+                        }
+                    }
+                }
+            }*/
+           
+
+            //Console.WriteLine("Search for CUI for " + symptom);
+            //QueryManager.getCUIFromSymptom(standardAnalyzer, searcher, symptom, luceneVersion);
+            stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
 
         }
