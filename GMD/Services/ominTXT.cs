@@ -3,6 +3,7 @@ using J2N.Numerics;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace GMD.Services
 {
@@ -25,7 +26,7 @@ namespace GMD.Services
               lineIndex++;
             }
             for (int i=0; i<index.Count-1;  i++)
-            {
+            { 
                 records.Add(GetFieldValue(lines, index[i], index[i + 1]));               
             }
             stopwatch.Stop();
@@ -85,9 +86,9 @@ namespace GMD.Services
             foreach (RecordOmin drug in drugBankDatas)
             {
                 Document doc = new Document();
-                doc.Add(new TextField("title", drug.Title, Field.Store.YES));
-                doc.Add(new StringField("classID", drug.Number, Field.Store.YES));
-                doc.Add(new StringField("CS", drug.ClinicalFeatures, Field.Store.YES));
+                doc.Add(new TextField("name", drug.Title, Field.Store.YES));
+                doc.Add(new StringField("classID", drug.Number.Replace("\n","").Trim(), Field.Store.YES));
+                doc.Add(new TextField("symptomsOmim", drug.ClinicalFeatures, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

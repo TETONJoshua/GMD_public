@@ -22,7 +22,7 @@ namespace GMD.Services
                 var command = connection.CreateCommand();
                 command.CommandText =
                     @"
-                        SELECT disease_db, disease_id, disease_label, col_9
+                        SELECT disease_db, sign_id, disease_label, col_9
                         FROM phenotype_annotation
                     ";
                 using (var reader = command.ExecuteReader())
@@ -30,14 +30,11 @@ namespace GMD.Services
                     while (reader.Read())
                     {
                         string diseaseFreq ="";
-                        try
-                        {
-                            reader.GetString(3);
-                        }
-                        catch (Exception e)
-                        {
-
-                        }
+                        string diseaseId ="";
+                        try {diseaseFreq = reader.GetString(3);}
+                        catch (Exception e){}
+                        try { diseaseId = reader.GetString(1);}
+                        catch (Exception e) { }
                         switch (diseaseFreq)
                         {
                             case "HP:0040280":
@@ -65,7 +62,7 @@ namespace GMD.Services
                         sqlite entry = new sqlite
                         {
                             disease_db = reader.GetString(0),
-                            disease_id = reader.GetString(1),
+                            disease_id = diseaseId,
                             disease_label = reader.GetString(2),
                             diseaseFreq = diseaseFreq
                         };
@@ -89,7 +86,7 @@ namespace GMD.Services
                 doc.Add(new TextField("name", drug.disease_label, Field.Store.YES));
                 doc.Add(new StringField("HP", drug.disease_id.Trim(), Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
-                //Console.WriteLine(drug.diseaseFreq);
+                //Console.WriteLine(drug.disease_label);
                 doc.Add(new StringField("diseaseFrequency", drug.diseaseFreq, Field.Store.YES));
                 writer.AddDocument(doc);
             }

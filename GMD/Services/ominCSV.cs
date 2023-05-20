@@ -25,7 +25,7 @@ namespace GMD.Services
                         continue; // Ignore la première ligne (en-têtes des colonnes)
                     }
 
-                    string[] values = line.Split(',');
+                    string[] values = line.Split('!');
 
                     RecordOminCSV RecordOminCSV = new RecordOminCSV
                     {
@@ -50,7 +50,7 @@ namespace GMD.Services
             {
                 Document doc = new Document();
                 doc.Add(new StringField("classID", drug.ClassId, Field.Store.YES));
-                doc.Add(new StringField("CUI", drug.Cui, Field.Store.YES));
+                doc.Add(new StringField("CUI_onto", drug.Cui, Field.Store.YES));
                 doc.Add(new StringField("synonyms", drug.Synonyms, Field.Store.YES));
                 doc.Add(new TextField("name", drug.PreferredLabel, Field.Store.YES));
                 writer.AddDocument(doc);
