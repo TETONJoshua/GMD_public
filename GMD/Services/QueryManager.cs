@@ -10,6 +10,7 @@ using System;
 
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using static Lucene.Net.Queries.Function.ValueSources.MultiFunction;
 
 namespace GMD.Services
 {
@@ -112,6 +113,10 @@ namespace GMD.Services
                     Console.WriteLine($"            -> NAME : {name}");
                     Console.WriteLine($"            -> CID : {CID}");
                     Console.WriteLine($"            -> ATC : {atcCode}");
+                    if (frequence == null)
+                    {
+                        frequence = "unknow";
+                    }
                     Console.WriteLine($"            -> FREQ : {frequence}");
                     names.Add(name);
 
