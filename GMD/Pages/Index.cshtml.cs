@@ -43,7 +43,7 @@ namespace GMD.Pages
 
             //Create an index writer
             IndexWriterConfig indexConfig = new IndexWriterConfig(luceneVersion, standardAnalyzer);
-            indexConfig.OpenMode = OpenMode.CREATE;                             // create/overwrite index
+            indexConfig.OpenMode = OpenMode.APPEND;                             // create/overwrite index
             IndexWriter writer = new IndexWriter(indexDir, indexConfig);
 
             brKeg dKegg = new brKeg(); //Done
@@ -96,13 +96,13 @@ namespace GMD.Pages
             using DirectoryReader reader = writer.GetReader(applyAllDeletes: true);
             IndexSearcher searcher = new IndexSearcher(reader);
 
-            stopwatch.Restart();
+            //stopwatch.Restart();
             string symptom = "Head pain light sensitive";
             //GETS SIDE EFFECTS
             QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
-            stopwatch.Stop();
-            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
-            stopwatch.Restart();
+            //stopwatch.Stop();
+            //Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+            //stopwatch.Restart();
 
              
             Console.WriteLine("Found molecule from ATC : ");
@@ -152,8 +152,8 @@ namespace GMD.Pages
 
             //Console.WriteLine("Search for CUI for " + symptom);
             //QueryManager.getCUIFromSymptom(standardAnalyzer, searcher, symptom, luceneVersion);
-            stopwatch.Stop();
-            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+            //stopwatch.Stop();
+            //Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
 
         }
     }

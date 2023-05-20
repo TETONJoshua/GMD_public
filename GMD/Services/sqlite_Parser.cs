@@ -1,7 +1,9 @@
 ﻿using GMD.Mapping;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using Microsoft.Data.Sqlite;
 using System.Diagnostics;
+using static Lucene.Net.Search.FieldValueHitQueue;
 
 namespace GMD.Services
 {
@@ -9,17 +11,33 @@ namespace GMD.Services
     {
         public List<sqlite> ParseSqlite()
         {
+            //parseSqlite();
             Stopwatch stopwatch = Stopwatch.StartNew();
             List<sqlite> list = new List<sqlite>();
-            using (StreamReader reader = new StreamReader("sources/sqlite.txt"))
+
+            using (var connection = new SqliteConnection("Data Source=sources/hpo_annotations.sqlite"))
             {
-                string line;
-                while ((line = reader.ReadLine()) != null)
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText =
+                    @"
+                        SELECT disease_db, disease_id, disease_label, col_9
+                        FROM phenotype_annotation
+                    ";
+                using (var reader = command.ExecuteReader())
                 {
-                    string[] data = line.Split(", ");
-                    if (data.Length >= 3)
+                    while (reader.Read())
                     {
-                        string diseaseFreq = data[8];
+                        string diseaseFreq ="";
+                        try
+                        {
+                            reader.GetString(3);
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
                         switch (diseaseFreq)
                         {
                             case "HP:0040280":
@@ -41,25 +59,24 @@ namespace GMD.Services
                                 diseaseFreq = "5";
                                 break;
                             default:
+                                diseaseFreq = "7";
                                 break;
                         }
-
-
                         sqlite entry = new sqlite
                         {
-                            disease_db = data[0],
-                            disease_id = data[4],
-                            disease_label = data[2],
-                            diseaseFreq = diseaseFreq,
+                            disease_db = reader.GetString(0),
+                            disease_id = reader.GetString(1),
+                            disease_label = reader.GetString(2),
+                            diseaseFreq = diseaseFreq
                         };
-
                         list.Add(entry);
                     }
                 }
+
+                stopwatch.Stop();
+                Console.WriteLine("SQLITE parse time : " + stopwatch.ElapsedMilliseconds);
+                return list;
             }
-            stopwatch.Stop();
-            Console.WriteLine("SQLITE parse time : " + stopwatch.ElapsedMilliseconds);
-            return list;
         }
 
         public void indexSqliteDatas(List<sqlite> SqliteDatas, IndexWriter writer)
@@ -67,11 +84,12 @@ namespace GMD.Services
             Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (sqlite drug in SqliteDatas)
             {
+                //Console.WriteLine("CONNARD");
                 Document doc = new Document();
                 doc.Add(new TextField("name", drug.disease_label, Field.Store.YES));
-                
                 doc.Add(new StringField("HP", drug.disease_id.Trim(), Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
+                //Console.WriteLine(drug.diseaseFreq);
                 doc.Add(new StringField("diseaseFrequency", drug.diseaseFreq, Field.Store.YES));
                 writer.AddDocument(doc);
             }
@@ -79,6 +97,30 @@ namespace GMD.Services
             writer.Commit();
             stopwatch.Stop();
             Console.WriteLine("SQLITE index time : " + stopwatch.ElapsedMilliseconds);
+        }
+
+        public void parseSqlite()
+        {
+            using (var connection = new SqliteConnection("Data Source=sources/hpo_annotations.sqlite"))
+            {
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText =
+                    @"
+                        SELECT disease_label
+                        FROM phenotype_annotation
+                    ";
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var name = reader.GetString(0);
+
+                        //Console.WriteLine($"Hello, {name}!");
+                    }
+                }
+            }
         }
     }
 }
