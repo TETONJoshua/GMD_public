@@ -10,38 +10,128 @@ using System;
 
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using static Lucene.Net.Queries.Function.ValueSources.MultiFunction;
 
 namespace GMD.Services
 {
     public static class QueryManager
     {
-        public static void getSideEffectsMoleculeNames(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        public static List<DrugResult> getMoleculesFromSymptoms(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
             Console.WriteLine("Researched symptoms : " + symptom);
             QueryParser parser = new QueryParser(luceneVersion, "toxicity", standardAnalyzer);
-           
+            //parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 10);         //indicate we want the first 10 results
+            TopDocs topDocs = searcher.Search(query, n: 10);
             int i;
-            Console.WriteLine($"Molcules that can cause this as a side effects :");
+            List<DrugResult> toxicDrugs = new List<DrugResult>();
             for (i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
-                //read back a doc from results
+               
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string foundName = resultDoc.Get("drugName");
                 string tox= resultDoc.Get("toxicity");
-
-                Console.WriteLine($"    -> {foundName}, \n      Score : {topDocs.ScoreDocs[i].Score}");
-                Console.WriteLine($"        -> {tox}\n");
+                List<Drug> drugs = new List<Drug>();
+                drugs.Add(new Drug(foundName, tox, ""));
+                toxicDrugs.Add(new DrugResult("Unknown", drugs));
+                
             }
+            toxicDrugs.AddRange(getCIDfromSE(standardAnalyzer, searcher, symptom, luceneVersion));
+            return toxicDrugs;
+        }
+        public static List<DrugResult> getCIDfromSE(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        {
+            QueryParser parser = new QueryParser(luceneVersion, "name_SE", standardAnalyzer);
+            parser.DefaultOperator = QueryParser.AND_OPERATOR;
+            Query query = parser.Parse(symptom);
+            TopDocs topDocs = searcher.Search(query, n: 10);
+            int i;
+            string CID_SE, CUI_SE, frequence;
+            List<string> CID_SEs = new List<string>();
+            List<DrugResult> drugResults = new List<DrugResult>();
+            for (i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+               
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                CID_SE = resultDoc.Get("CID_SE");
+                CUI_SE = resultDoc.Get("CUI_SE");
+                frequence = resultDoc.Get("frequence");
+                bool known = false;
+                if (CID_SE != "" && CID_SE != null)
+                {
+                    foreach (string alreadyKnown in CID_SEs)
+                    {
+                        if (alreadyKnown == CID_SE)
+                        {
+                            known = true;
+                            break;
+                        }
+                    }
+                    if (!known)
+                    {
+                        CID_SEs.Add(CID_SE);
+                        
+                        drugResults.Add(new DrugResult(frequence, getATCFromCIDForSE(searcher, CID_SE)));
+                    }
+                }
+            }
+            return drugResults;
         }
 
-        public static List<string> getNameFromAtc(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion, string CUI, string CID, float score)
+        public static List<Drug> getATCFromCIDForSE(IndexSearcher searcher, string CID)
+        {
+            string atcCode;
+            Query query = new TermQuery(new Term("CID", CID));
+            TopDocs topDocs = searcher.Search(query, n: 10);
+            List<Drug> drugs = new List<Drug>();
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {  
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                atcCode = resultDoc.Get("ATC");
+                if (atcCode != "" && atcCode != null)
+                {
+                    drugs.AddRange(getNameFromAtcForSE(searcher, atcCode));
+                }
+            }
+            return drugs;
+        }
+        public static List<Drug> getNameFromAtcForSE(IndexSearcher searcher, string atcCode)
+        {
+            Query query = new TermQuery(new Term("ATC", atcCode));
+            TopDocs topDocs = searcher.Search(query, n: 2);
+            List<Drug> drugs = new List<Drug>();
+
+            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            {
+                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                string name = resultDoc.Get("drugName");
+                if (name != "" && name != null)
+                {
+                    string tox = "";
+                    Query query2 = new TermQuery(new Term("drugName", name));
+                    TopDocs topDocs2 = searcher.Search(query2, n: 2);
+                    for (int j = 0; i < topDocs2.ScoreDocs.Length; i++)
+                    {
+                        Document resultDoc2 = searcher.Doc(topDocs2.ScoreDocs[j].Doc);
+                        string toxicity = resultDoc2.Get("toxicity");
+                        if (toxicity != "" && toxicity !=null)
+                        {
+                            tox = toxicity;
+                        }
+                    }     
+                    drugs.Add(new Drug(name, tox, ""));
+                }
+            }
+            return drugs;
+        }
+
+
+        public static List<Drug> getNameFromAtc(IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion, string CUI, string CID, float score)
         {
             Query query = new TermQuery(new Term("ATC", atcCode));
             TopDocs topDocs = searcher.Search(query, n: 2);
             string name;
-            List<string> names = new List<string>();
+            List<Drug> cures = new List<Drug>();
            
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
@@ -50,39 +140,30 @@ namespace GMD.Services
                 name = resultDoc.Get("drugName");
                 if (name != "" && name != null)
                 {
-                    Console.WriteLine($"         -> Suggested drug to treat this symptom :             Score : {topDocs.ScoreDocs[i].Score}");
-                    Console.WriteLine($"            -> NAME : {name}");
-                    Console.WriteLine($"            -> CID : {CID}");
-                    Console.WriteLine($"            -> ATC : {atcCode}");
-                    
-                    getIndicationFromName(searcher, name, luceneVersion);
-                    names.Add(name);
-                    
+                    cures.AddRange(getIndicationFromName(searcher, name, luceneVersion));
                 }
             }
-            return names;
+            return cures;
         }
 
-        public static List<string> getIndicationFromName(IndexSearcher searcher, string name, LuceneVersion luceneVersion)
+        public static List<Drug> getIndicationFromName(IndexSearcher searcher, string name, LuceneVersion luceneVersion)
         {
             string indic;
             Query query = new TermQuery(new Term("drugName", name));
             TopDocs topDocs = searcher.Search(query, n: 1);
-            List<string> indications = new List<string>();
+            List<Drug> cures = new List<Drug>();
            
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
-                //read back a doc from results
-                Console.WriteLine($"        -> Indication : ");
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 indic = resultDoc.Get("indication");
+                Drug cure = new Drug(name);
                 if (indic != "" && indic != null)
                 {
-                    Console.WriteLine($"          -> {indic}\n");
-                    indications.Add(indic);
+                    cure.indication = indic;
                 }
             }
-            return indications;
+            return cures;
         }
 
         public static List<string> getCIDFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
@@ -119,12 +200,13 @@ namespace GMD.Services
             return CIDs;
         }
 
-        public static List<string> getCIDFromCUI_INDIC(IndexSearcher searcher, string CUI, LuceneVersion luceneVersion, float score)
+        public static List<Drug> getCIDFromCUI_INDIC(IndexSearcher searcher, string CUI, LuceneVersion luceneVersion, float score)
         {
             string CID;
             Query query = new TermQuery(new Term("CUI", CUI));
             TopDocs topDocs = searcher.Search(query, n: 10);
             List<string> CIDs = new List<string>();
+            List<Drug> cures = new List<Drug>();
             
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
@@ -146,19 +228,25 @@ namespace GMD.Services
                         }
                         if (!known)
                         {
-                            if (getATCFromCID(searcher, CID, luceneVersion, CUI, score).Count != 0)
+                            var curesS = getATCFromCID(searcher, CID, luceneVersion, CUI, score);
+                            
+                            if (curesS.Count != 0)
                             {                                
                                 CIDs.Add(CID);
+                                cures.AddRange(curesS);
                             }                            
                         }
                     }
                 }
             }
-            return CIDs;
+            return cures;
         }
 
-
-        public static List<string> getUMLSFromSymptom_INDIC(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        public static QueryResult getQueryResult(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
+        {
+            return new QueryResult(getDiseasesFromSymptom(standardAnalyzer, searcher, symptom, luceneVersion), getMoleculesFromSymptoms(standardAnalyzer, searcher, symptom, luceneVersion) );
+        }
+        public static List<DiseaseResult> getDiseasesFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
             QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
             //parser.DefaultOperator = QueryParser.AND_OPERATOR;
@@ -166,6 +254,7 @@ namespace GMD.Services
             TopDocs topDocs = searcher.Search(query, n: 5);
             string UMLS;
             List<string> UMLSs = new List<string>();
+            List<DiseaseResult> allDiseasesResults = new List<DiseaseResult>();
 
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
@@ -174,12 +263,11 @@ namespace GMD.Services
                 UMLS = resultDoc.Get("CUI");
                 string symptoms = resultDoc.Get("symptoms");
                 string definition = resultDoc.Get("definition");
-                //Console.WriteLine(symptoms);
                 bool known = false;
-                List<string> diseases = new List<string>();
+                List<Disease> diseases = new List<Disease>();
+                
                 if (UMLS != "" && UMLS != null)
                 {
-                    //Console.WriteLine(CUI);
                     foreach (string alreadyKnown in UMLSs)
                     {
                         if (alreadyKnown == UMLS)
@@ -191,48 +279,34 @@ namespace GMD.Services
                     }
                     if (!known)
                     {
-                        Console.WriteLine("Found from Symptoms : " + symptoms + $"                   Score : {topDocs.ScoreDocs[i].Score} ; " + " UMLS/CUI : " + UMLS) ;
-                        Console.WriteLine("     -> Definition : " + definition ) ;
-                        
                         diseases.AddRange(getNameFromUMLS(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score, standardAnalyzer));
                         diseases.AddRange(getTitleFromUMLS(searcher, UMLS, luceneVersion, standardAnalyzer));
-
+                        
                         if (diseases.Count != 0)
                         {
-                            Console.WriteLine("     -> Assiociated to deseases : ");
-                            if (getCIDFromCUI_INDIC(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score).Count != 0)
+                            foreach (Disease d in diseases)
                             {
-                                //Console.WriteLine($"{CUI} score : {topDocs.ScoreDocs[i].Score}");
-                                
-                                
+                                d.cures = getTreatmentsForDisease(searcher, d.diseaseName, luceneVersion, standardAnalyzer);
                             }
-                            else
-                            {
-                                Console.WriteLine("     -> No suggested drugs for this disease");
-                               
-                            }
-
-                            Console.WriteLine("\n           --------------------------------------------------          \n");
-                            
-                        }
-                        else
-                        {
-                            Console.WriteLine($"\n-> CUI {UMLS} has been found to match your symptoms with a score of {topDocs.ScoreDocs[i].Score}, but no diseases are related to it         \n");
                         }
                         UMLSs.Add(UMLS);
+                        var symptomTreatments = getCIDFromCUI_INDIC(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score);
+                        symptomTreatments.AddRange(getTreatmentsForDisease(searcher, symptom, luceneVersion, standardAnalyzer ));
+                        allDiseasesResults.Add(new DiseaseResult(symptoms, topDocs.ScoreDocs[i].Score, diseases, symptomTreatments));
                     }
                 }
             }
-            return UMLSs;
+            allDiseasesResults.AddRange(getOmimFromSymptoms(searcher, symptom, luceneVersion, standardAnalyzer));
+            return allDiseasesResults;
         }
 
-        public static List<string> getNameFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, float score, Analyzer standardAnalyzer)
+        public static List<Disease> getNameFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, float score, Analyzer standardAnalyzer)
         {
             //string name="", classID="", HP="", def = "", synonyms="";
             Query query = new TermQuery(new Term("CUI", UMLS));
             TopDocs topDocs = searcher.Search(query, n:10);
             List<string> names = new List<string>();
-            List<string> results = new List<string>();
+            List<Disease> results = new List<Disease>();
             string def = "";
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
@@ -243,12 +317,11 @@ namespace GMD.Services
                 string hp = resultDoc.Get("HP");
                 //Console.WriteLine(hp);
                 bool known = false;
-                List<string> HPAnnotNames =new List<string>();
-                List<string> OmimNames =new List<string>();
+                List<Disease> HPAnnotDiseases =new List<Disease>();
                 if (hp != null)
                 {
-                    HPAnnotNames = getNamesFromHP(searcher, hp, luceneVersion, score, standardAnalyzer);
-                    results.AddRange(HPAnnotNames);
+                    HPAnnotDiseases = getNamesFromHP(searcher, hp, luceneVersion, score, standardAnalyzer);
+                    results.AddRange(HPAnnotDiseases);
                 }                
                
                 foreach (string nameKnown in names)
@@ -263,15 +336,13 @@ namespace GMD.Services
                     names.Add(name);
                 }
             }
-            results.AddRange(names);
+            //results.AddRange(names);
             string syn = "";
-            
-            
-
+        
             return results;
         }
 
-        public static List<string> getNamesFromHP(IndexSearcher searcher, string HP, LuceneVersion luceneVersion, float score, Analyzer standardAnalyzer)
+        public static List<Disease> getNamesFromHP(IndexSearcher searcher, string HP, LuceneVersion luceneVersion, float score, Analyzer standardAnalyzer)
         {
             Query query = new TermQuery(new Term("HP", HP));
             TopDocs topDocs = searcher.Search(query, n: 10);
@@ -306,21 +377,20 @@ namespace GMD.Services
                 }
             }
             var sortednames = names.OrderBy(x => x.Value);
-            List<string> returnedNames = new List<string>();  
+            List<Disease> returnedDiseases = new List<Disease>();  
             foreach (var name in sortednames)
             {
-                returnedNames.Add(name.Key);
-                Console.WriteLine($"            -> DISEASE : {name.Key}         Frequency : {name.Value}");
-                getTreatmentsForDisease(searcher,  name.Key, luceneVersion, standardAnalyzer);
+                returnedDiseases.Add(new Disease(name.Key, name.Value));
             }
-            return returnedNames;
+            return returnedDiseases;
         }
 
-        public static List<string> getTitleFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
+        public static List<Disease> getTitleFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
         {
             Query query = new TermQuery(new Term("CUI_onto", UMLS));
             TopDocs topDocs = searcher.Search(query, n: 20);
             List<string> names = new List<string>();
+            List<Disease> diseases = new List<Disease>();
             List<string> titleOmim = new List<string>();
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
@@ -331,67 +401,73 @@ namespace GMD.Services
                 if(strDisease != null && strDisease != "")
                 {
                     names.Add(strDisease);
+                    diseases.Add(new Disease(strDisease));
                 }
             }
-            foreach (var name in names)
-            {
-                Console.WriteLine($"            -> DISEASE : {name}");
-            }
-            return names;
+           
+            return diseases;
         }
 
-        public static List<string> getOmimFromSymptoms(IndexSearcher searcher, string symptoms, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
+        public static List<DiseaseResult> getOmimFromSymptoms(IndexSearcher searcher, string symptoms, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
         {
-            
+            List<DiseaseResult> diseaseResults = new List<DiseaseResult>();
             QueryParser  parser = new QueryParser(luceneVersion, "symptomsOmim", standardAnalyzer);
+            //parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptoms);
-            parser.DefaultOperator = QueryParser.AND_OPERATOR;
-            TopDocs topDocs = searcher.Search(query, n: 20);
-            List<string> names = new List<string>();
-            Console.WriteLine("Found from Symptoms : " + symptoms + "\n");
+           
+            TopDocs topDocs = searcher.Search(query, n: 3);
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                string sym = resultDoc.Get("symptomsOmim");
+                
                 string title = resultDoc.Get("name");
                 string classID = resultDoc.Get("classID");
                 if (title != "" && title != null)
                 {
-                    names.Add(title);
-                    Console.WriteLine("     -> Assiociated to genetic deseases : " + title + $" Score : { topDocs.ScoreDocs[i].Score}; " + " Class ID : " + classID + "\n");
+                    List<Disease> diseases = new List<Disease>();
+                    diseases.Add(new Disease(title));
+                    diseaseResults.Add(new DiseaseResult(sym, topDocs.ScoreDocs[i].Score, diseases, getTreatmentsForDisease(searcher, title, luceneVersion, standardAnalyzer)));
                 }
             }
+            
 
-            return names;
+            return diseaseResults;
         }
 
-        public static List<string> getTreatmentsForDisease(IndexSearcher searcher, string diseaseName, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
+        public static List<Drug> getTreatmentsForDisease(IndexSearcher searcher, string diseaseName, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
         {
-            QueryParser parser = new QueryParser(luceneVersion, "indication", standardAnalyzer);
-            Query query = parser.Parse(diseaseName);
-            TopDocs topDocs = searcher.Search(query, n: 3);
-            List<string> suggestedDrugs = new List<string>();
-            for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
+            try
             {
-                Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
-                string drugName = resultDoc.Get("drugName");
-                string indic = resultDoc.Get("indication");
-                if (drugName != null && topDocs.ScoreDocs[i].Score>2)
+                QueryParser parser = new QueryParser(luceneVersion, "indication", standardAnalyzer);
+                Query query = parser.Parse(diseaseName);
+                TopDocs topDocs = searcher.Search(query, n: 3);
+                List<Drug> suggestedDrugs = new List<Drug>();
+                for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
                 {
-                    Console.WriteLine($"                    -> Drug : {drugName}, with score : {topDocs.ScoreDocs[i].Score}");
-                    Console.WriteLine($"                        -> indication : {indic}");
-                    suggestedDrugs.Add(drugName);
+                    Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
+                    string drugName = resultDoc.Get("drugName");
+                    string indic = resultDoc.Get("indication");
+                    if (drugName != null && topDocs.ScoreDocs[i].Score > 2)
+                    {
+                        suggestedDrugs.Add(new Drug(drugName, indic));
+                    }
                 }
+                return suggestedDrugs;
             }
-            return suggestedDrugs;
+            catch
+            {
+                return new List<Drug>();
+            }
         }
 
 
-        public static List<string> getATCFromCID(IndexSearcher searcher, string CID, LuceneVersion luceneVersion, string CUI, float score)
+        public static List<Drug> getATCFromCID(IndexSearcher searcher, string CID, LuceneVersion luceneVersion, string CUI, float score)
         {
             string atcCode;
             Query query = new TermQuery(new Term("CID", CID));
             TopDocs topDocs = searcher.Search(query, n: 10);
-            List<string> indications = new List<string>();
+            List<Drug> cures = new List<Drug>();
             
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
@@ -400,14 +476,10 @@ namespace GMD.Services
                 atcCode = resultDoc.Get("ATC");
                 if (atcCode != "" && atcCode != null)
                 {
-                    if (getNameFromAtc(searcher, atcCode, luceneVersion, CUI, CID, score).Count != 0)
-                    {
-                        indications.Add(atcCode);
-                    }
-                    
+                    cures.AddRange(getNameFromAtc(searcher, atcCode, luceneVersion, CUI, CID, score));
                 }
             }
-            return indications;
+            return cures;
         }
 
         public static List<string> getCIDFromATC(Analyzer standardAnalyzer, IndexSearcher searcher, string atcCode, LuceneVersion luceneVersion)

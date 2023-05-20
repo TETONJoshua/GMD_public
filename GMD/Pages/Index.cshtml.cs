@@ -96,24 +96,72 @@ namespace GMD.Pages
             using DirectoryReader reader = writer.GetReader(applyAllDeletes: true);
             IndexSearcher searcher = new IndexSearcher(reader);
 
-            stopwatch.Restart();
-            string symptom = "Headache";
-            //GETS SIDE EFFECTS
-            QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
-            stopwatch.Stop();
-            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+                    
+            string symptom = "fever cough";
+
             stopwatch.Restart();
 
-             
-            Console.WriteLine("Found molecule from ATC : ");
 
-            //GETS POTENTIAL DISEASE FROM SYMPTOM AND INDICATED DRUGS FOR THIS DISEASE
-            Console.WriteLine("Search for CUI for " + symptom);
-            List<string> CUIs_D =  QueryManager.getUMLSFromSymptom_INDIC(standardAnalyzer, searcher, symptom, luceneVersion);
-            List<string> GeneticDiseases = QueryManager.getOmimFromSymptoms(searcher, symptom, luceneVersion, standardAnalyzer);
+            //Console.WriteLine("Search for CUI for " + symptom);
+            QueryResult result =  QueryManager.getQueryResult(standardAnalyzer, searcher, symptom, luceneVersion);
+            Console.WriteLine("************************************************************************************************************************************************");
+            Console.WriteLine("       ----------        - DISEASES -         ----------");
+            foreach (DiseaseResult diseaseResult in result.foundDiseases)
+            {
+                if (diseaseResult.diseases.Count > 0)
+                {
+                    Console.WriteLine("*********************************************************************************************");
+                    Console.WriteLine("Matching score : " + diseaseResult.symptomScore + "\n");
+                    //Console.WriteLine("Diseases found from symptom block :\n " + diseaseResult.matchingSymtom + "\n\n");
+
+                    foreach (Disease disease in diseaseResult.diseases)
+                    {
+                        Console.WriteLine("Disease name : " + disease.diseaseName);
+                        if (disease.diseaseFrequency != 7)
+                        {
+                            Console.WriteLine("     Frequency : " + disease.diseaseFrequency + "\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine("     Frequency : UNKNOWN\n");
+                        }
+                        if (disease.cures.Count > 0)
+                        {
+                            Console.WriteLine("     KNOWN CURES OR TREATMENT FOR DISEASE : ");
+                            foreach (Drug drug in disease.cures)
+                            {
+                                Console.WriteLine("         Drug name : " + drug.drugName);
+                                Console.WriteLine("             Indication : \n" + drug.indication);
+                            }
+                        }
+                    }
+                    if (diseaseResult.symptomCures.Count > 0)
+                    {
+                        Console.WriteLine("Suggested drugs to appease the symptom : ");
+                        foreach (Drug cure in diseaseResult.symptomCures)
+                        {
+                            Console.WriteLine("     Drug name : " + cure.drugName);
+                            Console.WriteLine("         Indication : " + cure.indication);
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("       ----------        - DRUGS -         ----------");
+
+            foreach (DrugResult drugResult in result.foundDrugCause)
+            {
+                
+                foreach (Drug cure in drugResult.drugs)
+                {
+                    Console.WriteLine("********************************************************************************");
+                    Console.WriteLine("Drug name : " + cure.drugName);
+                    Console.WriteLine("     -> Frequence : " + drugResult.frequence);
+                    Console.WriteLine("     -> Toxicity : " + cure.toxicity);
+                }
+                
+            }
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
-
         }
     }
 }

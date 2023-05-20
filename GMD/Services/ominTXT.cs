@@ -57,7 +57,14 @@ namespace GMD.Services
                 }
                 if (lines[index[i]].StartsWith("*FIELD* TI"))
                 {
-                    title = getValue(index[i] + 1, index[i + 1], lines);
+                    title = getValue(index[i] + 1, index[i + 1], lines).ToLower();
+                    string[] tst = title.Split(";;");
+                    if (tst.Length > 0)
+                    {
+                        
+                        title = tst[0].ToLower();
+                    }
+                    
 
                 }
                 if (lines[index[i]].StartsWith("*FIELD* CS"))

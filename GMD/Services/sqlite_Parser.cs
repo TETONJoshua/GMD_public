@@ -31,10 +31,37 @@ namespace GMD.Services
                     {
                         string diseaseFreq ="";
                         string diseaseId ="";
+                        string diseaseLabel = "", diseaseName="";
+                        List<string> synonyms = new List<string>();
+
                         try {diseaseFreq = reader.GetString(3);}
                         catch (Exception e){}
                         try { diseaseId = reader.GetString(1);}
                         catch (Exception e) { }
+                        try
+                        {
+                            diseaseLabel = reader.GetString(2);
+                            string[] fract = diseaseLabel.Split(";;");
+                            if (fract[0].Split(", ").Length > 0)
+                            {
+                                //Console.WriteLine("pd");
+                                string tmp;
+                                for (int i=0; i < fract.Length/2; i++)
+                                {
+                                    tmp = fract[fract.Length - 1 - i];
+                                    fract[fract.Length - 1 - i] = fract[i];
+                                    fract[i] = tmp;
+                                }
+                                diseaseName = fract[0];
+                            }
+                           
+                            foreach (string syn in fract)
+                            {
+                                synonyms.Add(syn);
+                            }
+
+                        }
+                        catch { Console.WriteLine("pd"); }
                         switch (diseaseFreq)
                         {
                             case "HP:0040280":
@@ -58,15 +85,8 @@ namespace GMD.Services
                             default:
                                 diseaseFreq = "7";
                                 break;
-                        }
-                        sqlite entry = new sqlite
-                        {
-                            disease_db = reader.GetString(0),
-                            disease_id = diseaseId,
-                            disease_label = reader.GetString(2),
-                            diseaseFreq = diseaseFreq
-                        };
-                        list.Add(entry);
+                        }                       
+                        list.Add(new sqlite(synonyms, reader.GetString(0), diseaseId, diseaseName.ToLower(), diseaseFreq));
                     }
                 }
 
