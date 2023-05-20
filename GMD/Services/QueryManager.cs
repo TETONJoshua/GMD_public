@@ -20,9 +20,9 @@ namespace GMD.Services
         {
             Console.WriteLine("Researched symptoms : " + symptom);
             QueryParser parser = new QueryParser(luceneVersion, "toxicity", standardAnalyzer);
-           
+            parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 10);         //indicate we want the first 10 results
+            TopDocs topDocs = searcher.Search(query, n: 10);
             int i;
             Console.WriteLine($"Molecules that can cause this as a side effects :");
             for (i = 0; i < topDocs.ScoreDocs.Length; i++)
@@ -40,7 +40,7 @@ namespace GMD.Services
         {
             Console.WriteLine("Researched symptoms : " + symptom);
             QueryParser parser = new QueryParser(luceneVersion, "name_SE", standardAnalyzer);
-
+            parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
             TopDocs topDocs = searcher.Search(query, n: 5000);
             int i;

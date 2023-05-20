@@ -97,7 +97,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
             stopwatch.Restart();
-            string symptom = "Constipation";
+            string symptom = "Weight decreased";
             
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
             stopwatch.Restart();
