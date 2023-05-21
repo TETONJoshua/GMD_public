@@ -15,6 +15,7 @@ using Lucene.Net.Util;
 using System.Diagnostics;
 using LuceneDirectory = Lucene.Net.Store.Directory;
 using static Lucene.Net.Util.Packed.PackedInt32s;
+using GMD.Model;
 
 namespace GMD.Pages
 {
@@ -22,6 +23,9 @@ namespace GMD.Pages
     {
         public const LuceneVersion luceneVersion = LuceneVersion.LUCENE_48;
         private readonly ILogger<IndexModel> _logger;
+        internal List<Disease>? diseases;
+        internal List<Drug>? drugs;
+        internal string symptoms;
 
         public IndexModel(ILogger<IndexModel> logger)
         {
@@ -98,7 +102,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
                     
-            string symptom = "fever;necrosis;red skin;Itchy;plaque";
+            string symptom = "Headache";
 
             stopwatch.Restart();
 
@@ -206,6 +210,7 @@ namespace GMD.Pages
                 i++;
             }
 
+
             Console.WriteLine(" ----------------------------- DISEASES\n\n");
             foreach (var disease in orderedDiseasesResults)
             {
@@ -230,66 +235,10 @@ namespace GMD.Pages
                 Console.WriteLine(" -> Toxicity : " + drug.toxicity);
                 Console.WriteLine("\n");
             }
-
-            /*
-            Console.WriteLine("************************************************************************************************************************************************");
-            Console.WriteLine("       ----------        - DISEASES -         ----------");
-            foreach (DiseaseResult diseaseResult in result.foundDiseases)
-            {
-                if (diseaseResult.diseases.Count > 0)
-                {
-                    Console.WriteLine("*********************************************************************************************");
-                    Console.WriteLine("Matching score : " + diseaseResult.symptomScore + "\n");
-                    //Console.WriteLine("Diseases found from symptom block :\n " + diseaseResult.matchingSymtom + "\n\n");
-
-                    foreach (Disease disease in diseaseResult.diseases)
-                    {
-                        Console.WriteLine("Disease name : " + disease.diseaseName);
-                        if (disease.diseaseFrequency != 7)
-                        {
-                            Console.WriteLine("     Frequency : " + disease.diseaseFrequency + "\n");
-                        }
-                        else
-                        {
-                            Console.WriteLine("     Frequency : UNKNOWN\n");
-                        }
-                        if (disease.cures.Count > 0)
-                        {
-                            Console.WriteLine("     KNOWN CURES OR TREATMENT FOR DISEASE : ");
-                            foreach (Drug drug in disease.cures)
-                            {
-                                Console.WriteLine("         Drug name : " + drug.drugName);
-                                Console.WriteLine("             Indication : \n" + drug.indication);
-                            }
-                        }
-                    }
-                    if (diseaseResult.symptomCures.Count > 0)
-                    {
-                        Console.WriteLine("Suggested drugs to appease the symptom : ");
-                        foreach (Drug cure in diseaseResult.symptomCures)
-                        {
-                            Console.WriteLine("     Drug name : " + cure.drugName);
-                            Console.WriteLine("         Indication : " + cure.indication);
-                        }
-                    }
-                }
-            }
-            Console.WriteLine("       ----------        - DRUGS -         ----------");
-
-            foreach (DrugResult drugResult in result.foundDrugCause)
-            {
-                
-                foreach (Drug cure in drugResult.drugs)
-                {
-                    Console.WriteLine("********************************************************************************");
-                    Console.WriteLine("Drug name : " + cure.drugName);
-                    Console.WriteLine("     -> Frequence : " + drugResult.frequence);
-                    Console.WriteLine("     -> Toxicity : " + cure.toxicity);
-                }
-                
-            }*/
-            stopwatch.Stop();
-            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+            
+            diseases = orderedDiseasesResults;
+            drugs = orderedDrugsResults;
+            symptoms = symptom;
         }
     }
 }

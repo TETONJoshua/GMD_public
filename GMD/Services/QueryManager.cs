@@ -44,7 +44,7 @@ namespace GMD.Services
             QueryParser parser = new QueryParser(luceneVersion, "name_SE", standardAnalyzer);
             parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 10);
+            TopDocs topDocs = searcher.Search(query, n: 100);
             int i;
             string CID_SE, CUI_SE, frequence;
             List<string> CID_SEs = new List<string>();

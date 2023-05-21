@@ -1,12 +1,209 @@
 ﻿@page
+@using GMD.Model
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "DoctoLibre";
 }
+<div class="container">
+    <div><p style="color: #f7f7f7; font-weight: bold;"> Reported symptoms : @Model.symptoms.Replace(";"," ")</p></div>
+    <div class="row">       
+        <div class="results col-sm-6" style="width:50%">
+            <div>
+                <p style="color: #f0ad4e; font-weight: bold; ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-virus" viewBox="0 0 16 16">
+                        <path d="M8 0a1 1 0 0 1 1 1v1.402c0 .511.677.693.933.25l.7-1.214a1 1 0 0 1 1.733 1l-.701 1.214c-.256.443.24.939.683.683l1.214-.701a1 1 0 0 1 1 1.732l-1.214.701c-.443.256-.262.933.25.933H15a1 1 0 1 1 0 2h-1.402c-.512 0-.693.677-.25.933l1.214.701a1 1 0 1 1-1 1.732l-1.214-.7c-.443-.257-.939.24-.683.682l.701 1.214a1 1 0 1 1-1.732 1l-.701-1.214c-.256-.443-.933-.262-.933.25V15a1 1 0 1 1-2 0v-1.402c0-.512-.677-.693-.933-.25l-.701 1.214a1 1 0 0 1-1.732-1l.7-1.214c.257-.443-.24-.939-.682-.683l-1.214.701a1 1 0 1 1-1-1.732l1.214-.701c.443-.256.261-.933-.25-.933H1a1 1 0 1 1 0-2h1.402c.511 0 .693-.677.25-.933l-1.214-.701a1 1 0 1 1 1-1.732l1.214.701c.443.256.939-.24.683-.683l-.701-1.214a1 1 0 0 1 1.732-1l.701 1.214c.256.443.933.261.933-.25V1a1 1 0 0 1 1-1Zm2 5a1 1 0 1 0-2 0 1 1 0 0 0 2 0ZM6 7a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm1 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm5-3a1 1 0 1 0-2 0 1 1 0 0 0 2 0Z" />
+                    </svg>
+                    Diseases that can cause this :
+                </p>
+            </div>
+            @foreach (var disease in Model.diseases)
+            {
+                <div class="symptom">
+                    <div class="disease">
+                        <p class="diseaseName">Name : @disease.diseaseName </p>
+                    </div>
+                    <p class="cure">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-prescription2" viewBox="0 0 16 16">
+                            <path d="M7 6h2v2h2v2H9v2H7v-2H5V8h2V6Z" />
+                            <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v10.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 14.5V4a1 1 0 0 1-1-1V1Zm2 3v10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V4H4ZM3 3h10V1H3v2Z" />
+                        </svg> Possible medication :
+                    </p>
+                    @if(disease.cures != null)
+                    {
+                        @foreach (var drug in disease.cures)
+                        {
+                            <div class="drug">
+                                <p class="drugName"> @drug.drugName </p>
+                                <p class="cure"><span class="indication"> Indication : </span> @drug.indication </p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="drug">
+                            <p class="drugName"> Unknown </p>
+                        </div>
+                    }
+                    <br>
+                    <span class="score">Score: @disease.score</span>
+                </div>
+                <hr class="border border-danger border-2 opacity-50">
+            }
+        </div>
+        <div class="results col-sm-6 style=" width:50%"">
+            <div>
+                <p style="color: #f0ad4e; font-weight: bold; ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-capsule-pill" viewBox="0 0 16 16">
+                        <path d="M11.02 5.364a3 3 0 0 0-4.242-4.243L1.121 6.778a3 3 0 1 0 4.243 4.243l5.657-5.657Zm-6.413-.657 2.878-2.879a2 2 0 1 1 2.829 2.829L7.435 7.536 4.607 4.707ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm-.5 1.042a3 3 0 0 0 0 5.917V9.042Zm1 5.917a3 3 0 0 0 0-5.917v5.917Z" />
+                    </svg> Drugs that can cause this :
+                </p>
+            </div>
+            @foreach (var drug in Model.drugs)
+            {
+                <div class="symptom">
+                    <div class="disease">
+                        <p class="drugName"> Name : @drug.drugName </p>
+                        <p class="toxicity"> Toxicity : @drug.toxicity </p>
+                    </div>
+                    <br>
+                    <span class="score">Score: @drug.drugScore</span>
+                </div>
+                <hr class="border border-danger border-2 opacity-50">
+            }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <div>
-       
+        </div>
     </div>
+    <input type="text" class="search-field" placeholder="Enter a symptom...">
+    <button class="submit-button">Submit</button>
 </div>
+
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Dlfkxgs1cmyszXG2wVwf6ZJ5dxDS51onq6mLfGvxrAq0yaKqNKwsXWygwnKMLvXcAY65xGJvHxucKsJkAhmykodFmOYQOmi3_eDssf8yOBXmBAoxQAm59m-r8wQKkcY2WjILhDWzMY4whOamP9bJYg" charset="UTF-8"></script>
+<link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jZG4uZGlzY29yZGFwcC5jb20vYXR0YWNobWVudHMvMTEwNTYwNzY5NjY2Njg1MzM3Ni8xMTA5NzUwMTE2NDk3MjI3ODI3L0hUTUxQYWdlMS5odG1s" />
+<style>
+    /* Reset default browser styles */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Body styles */
+    header{
+        background-color: #36393f;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background-color: #36393f;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Container styles */
+    .container {
+        max-width: 80%;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Search field styles */
+    .search-field {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #40444b;
+        color: #ffffff;
+        font-size: 16px;
+    }
+
+    /* Submit button styles */
+    .submit-button {
+        display: block;
+        width: 20%;
+        padding: 10px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #cc7a00;
+        color: #ffffff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    /* Research results styles */
+    .results {
+        margin-top: 20px;
+        overflow-y: auto;
+        max-height: 750px;
+    }
+
+    ::-webkit-scrollbar {
+        width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #2D2D2D;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #ff9e4f;
+        border-radius: 10px;
+        border: 3px solid #2D2D2D;
+    }
+
+    /* Symptom styles */
+    .symptom {
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #2f3136;
+        border-radius: 4px;
+    }
+
+        /* Symptom score styles */
+        .symptom .score {
+            font-weight: bold;
+            color: #5bc0de;
+        }
+
+        /* Symptom definition styles */
+        .symptom .definition {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+
+    /* Disease styles */
+    .disease {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #cc7a00;
+        border-radius: 4px;
+        background-color: #2f3136;
+    }
+
+    /* Cure styles */
+    .cure {
+        margin-top: 10px;
+        padding-left: 10px;
+        font-size: 14px;
+    }
+
+    /* Drugs styles */
+    .drug {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #5cb85c;
+        border-radius: 4px;
+        background-color: #2f3136;
+    }
+
+    /* Global cure styles */
+    .global-cure {
+        margin-top: 10px;
+        padding-left: 10px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+</style>
