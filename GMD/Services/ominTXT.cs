@@ -3,6 +3,7 @@ using J2N.Numerics;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace GMD.Services
 {
@@ -25,7 +26,7 @@ namespace GMD.Services
               lineIndex++;
             }
             for (int i=0; i<index.Count-1;  i++)
-            {
+            { 
                 records.Add(GetFieldValue(lines, index[i], index[i + 1]));               
             }
             stopwatch.Stop();
@@ -46,7 +47,7 @@ namespace GMD.Services
             }
             string nb = string.Empty;
             string title = string.Empty;
-            string clinic = string.Empty;
+           List<string> clinic = new List<string>();
 
             for (int i = 0; i<index.Count-1; i++)
             {
@@ -56,25 +57,49 @@ namespace GMD.Services
                 }
                 if (lines[index[i]].StartsWith("*FIELD* TI"))
                 {
-                    title = getValue(index[i] + 1, index[i + 1], lines);
+                    title = getValue(index[i] + 1, index[i + 1], lines).ToLower();
+                    string[] tst = title.Split(";;");
+                    if (tst.Length > 0)
+                    {
+                        
+                        title = tst[0].ToLower();
+                    }
+                    
 
                 }
                 if (lines[index[i]].StartsWith("*FIELD* CS"))
                 {
-                    clinic = getValue(index[i] + 1, index[i + 1], lines);
+                    clinic = getValueCS(index[i] + 1, index[i + 1], lines);
                 }
             }
             
-            return new RecordOmin(nb, title, clinic);
+            return new RecordOmin(clinic, nb, title);
         }
 
         public string getValue(int min, int max, string[] lines)
         {
-            string value = string.Empty;
+            string value = "";
             for (int i = min; i < max; i++)
             {
-                value += lines[i].Trim() + Environment.NewLine;
+               value += lines[i].Trim() + Environment.NewLine;
+               
             }
+
+            return value;
+        }
+        public List<string> getValueCS(int min, int max, string[] lines)
+        {
+            List<string> value = new List<string>();
+            for (int i = min; i < max; i++)
+            {
+                var line = lines[i];
+                if (line.StartsWith("   ") && !line.StartsWith("   [") && !line.ToLower().Contains("autosomal"))
+                {
+                    //Console.WriteLine(line);
+                    value.Add(line.Replace("   ", ""));
+                }
+            }
+            
             return value;
         }
 
@@ -85,9 +110,16 @@ namespace GMD.Services
             foreach (RecordOmin drug in drugBankDatas)
             {
                 Document doc = new Document();
-                doc.Add(new TextField("title", drug.Title, Field.Store.YES));
-                doc.Add(new StringField("classID", drug.Number, Field.Store.YES));
-                doc.Add(new StringField("CS", drug.ClinicalFeatures, Field.Store.YES));
+                doc.Add(new TextField("name", drug.Title, Field.Store.YES));
+                doc.Add(new StringField("classID", drug.Number.Replace("\n","").Trim(), Field.Store.YES));
+                foreach (string line in drug.ClinicalFeatures)
+                {
+                    if (line.ToLower().Contains("loss of nails"))
+                    {
+                        Console.WriteLine(line.Replace(";", ""));
+                    }
+                    doc.Add(new TextField("symptomsOmim", line.Replace(";",""), Field.Store.YES));
+                }
                 writer.AddDocument(doc);
             }
 

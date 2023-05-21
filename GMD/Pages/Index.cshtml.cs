@@ -35,7 +35,8 @@ namespace GMD.Pages
             //Open the Directory using a Lucene Directory class
             string indexName = "lucene_index";
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
-
+            int MAX_RESULTS_DIS = 5;
+            int MAX_RESULTS_DRUG = 5;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -96,65 +97,199 @@ namespace GMD.Pages
             using DirectoryReader reader = writer.GetReader(applyAllDeletes: true);
             IndexSearcher searcher = new IndexSearcher(reader);
 
-            stopwatch.Restart();
-            string symptom = "Head pain light sensitive";
-            //GETS SIDE EFFECTS
-            QueryManager.getSideEffectsMoleculeNames(standardAnalyzer, searcher, symptom, luceneVersion);
-            stopwatch.Stop();
-            Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+                    
+            string symptom = "fever;necrosis;red skin;Itchy;plaque";
+
             stopwatch.Restart();
 
-             
-            Console.WriteLine("Found molecule from ATC : ");
 
-
-            /*List<string> names = QueryManager.getNameFromAtc(searcher, "L01BC08", luceneVersion);
-            foreach (string name in names)
+            //Console.WriteLine("Search for CUI for " + symptom);
+            string[] brokenSymptom = symptom.Split(";");    
+            List<QueryResult> queryResults = new List<QueryResult>();
+            foreach (string sympt in brokenSymptom)
             {
-                QueryManager.getIndicationFromName(searcher, name, luceneVersion);
+                Console.WriteLine("Researched symptoms : " + sympt);
+                queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, sympt, luceneVersion));
             }
-            stopwatch.Stop();*/
-
-
-            /*List<string> CUIs = QueryManager.getHpoUMLSFromCui(searcher, "C1844753", luceneVersion);
-
-            foreach(string cui in CUIs) {
-                if (cui.StartsWith("HP"))
-                {
-                    QueryManager.getGenOmimbyHP(searcher, cui, luceneVersion);
-                }
-                else
-                {
-                    QueryManager.getGenOmimbyCUI(searcher, cui, luceneVersion);
-                }
-            }*/
-
-            //GETS POTENTIAL DISEASE FROM SYMPTOM AND INDICATED DRUGS FOR THIS DISEASE
-            Console.WriteLine("Search for CUI for " + symptom);
-            List<string> CUIs_D =  QueryManager.getUMLSFromSymptom_INDIC(standardAnalyzer, searcher, symptom, luceneVersion);
-            /*foreach (string CUI in CUIs_D)
+            Dictionary<string, Disease> diseasesDict = new Dictionary<string, Disease>();
+            Dictionary<string, float> diseasesDictStr = new Dictionary<string, float>();
+            Dictionary<string, Drug> drugsDict = new Dictionary<string, Drug>();
+            Dictionary<string, float> drugsDictStr = new Dictionary<string, float>();
+            
+            foreach (QueryResult queryResult in queryResults)
             {
-                List<string> CIDs = QueryManager.getCIDFromCUI_INDIC(searcher, CUI, luceneVersion);
-                foreach (string CID in CIDs)
-                {
-                    List<string> ATCs = QueryManager.getATCFromCID(searcher, CID, luceneVersion);
-                    foreach (string ATC in ATCs)
-                    {
-                        List<string> names_INDIC = QueryManager.getNameFromAtc(searcher, ATC, luceneVersion);
-                        foreach (string name  in names_INDIC)
+                foreach (DiseaseResult disR in queryResult.foundDiseases) 
+                { 
+                    foreach(Disease disease in disR.diseases)
+                    {                        
+                        if (diseasesDictStr.ContainsKey(disease.diseaseName))
                         {
-                            List<string> indications = QueryManager.getIndicationFromName(searcher, name, luceneVersion);
+                             
+                            diseasesDict[disease.diseaseName].score = diseasesDict[disease.diseaseName].score +disR.symptomScore ;
+                            diseasesDictStr[disease.diseaseName] = diseasesDictStr[disease.diseaseName]  + disR.symptomScore;
+                            
+                        }
+                        else
+                        {
+                            disease.score = 1+disR.symptomScore;
+                            diseasesDict.Add(disease.diseaseName, disease);
+                            diseasesDictStr.Add(disease.diseaseName, disR.symptomScore);
                         }
                     }
                 }
-            }*/
-           
+                foreach (DrugResult drugR in queryResult.foundDrugCause)
+                {
+                    foreach (Drug drug in drugR.drugs)
+                    {
+                        if (drugsDict.ContainsKey(drug.drugName))
+                        {
+                            drugsDict[drug.drugName].drugScore = drugsDict[drug.drugName].drugScore * 2 ;
+                            drugsDictStr[drug.drugName] *= 2;
+                        }
+                        else
+                        {                           
+                            drug.drugScore = 1;
+                            drugsDict.Add(drug.drugName, drug);
+                            drugsDictStr.Add(drug.drugName, 1);
+                        }
+                    }
+                }
+            }
 
-            //Console.WriteLine("Search for CUI for " + symptom);
-            //QueryManager.getCUIFromSymptom(standardAnalyzer, searcher, symptom, luceneVersion);
+            var orderedDiseases = diseasesDictStr.OrderByDescending(x => x.Value);
+            var orderedDrugs = drugsDictStr.OrderByDescending(x => x.Value);
+            Dictionary<string, float> diseasesResultsStr = new Dictionary<string, float>();
+            List<Disease> orderedDiseasesResults = new List<Disease>();
+            Dictionary<string, float> drugsResultsStr = new Dictionary<string, float>();
+            List<Drug> orderedDrugsResults = new List<Drug>();
+            int i = 0, j = 0;
+            foreach (var disease in orderedDiseases)
+            {
+                if (i < MAX_RESULTS_DIS)
+                {
+                    foreach (string diseaseRec in diseasesDict.Keys)
+                    {
+                        if (disease.Key == diseaseRec)
+                        {
+                            diseasesDict[diseaseRec].score += disease.Value;
+                            orderedDiseasesResults.Add(diseasesDict[diseaseRec]);
+                        }
+
+                    }
+                }
+                else
+                {
+                    break;
+                }
+                i++;
+                
+            }
+            i = 0;
+            foreach (var drug in orderedDrugs)
+            {
+                if (i < MAX_RESULTS_DRUG)
+                {
+                    foreach (string drugRec in drugsDict.Keys)
+                    {
+                        if (drug.Key == drugRec)
+                        {
+                            drugsDict[drugRec].drugScore += drug.Value;
+                            orderedDrugsResults.Add(drugsDict[drugRec]);
+                        }
+
+                    }
+                }
+                else
+                {
+                    break;
+                }
+                i++;
+            }
+
+            Console.WriteLine(" ----------------------------- DISEASES\n\n");
+            foreach (var disease in orderedDiseasesResults)
+            {
+                Console.WriteLine("\n");
+                Console.WriteLine(" -> DISEASE NAME : " +  disease.diseaseName);
+                Console.WriteLine(" -> DISEASE Score : " +  disease.score);
+                Console.WriteLine(" -> Associated cure : ");
+                foreach(Drug cure in disease.cures)
+                {
+                    Console.WriteLine("     -> Drug name  : " + cure.drugName);
+                    Console.WriteLine("     -> Indication  : " + cure.indication);
+
+                }
+                Console.WriteLine("\n");
+            }
+            Console.WriteLine(" ----------------------------- DRUGS\n\n");
+            foreach (var drug in orderedDrugsResults)
+            {
+                Console.WriteLine("\n");
+                Console.WriteLine(" -> DRUG NAME : " + drug.drugName);
+                Console.WriteLine(" -> DRUG Score : " + drug.drugScore);
+                Console.WriteLine(" -> Toxicity : " + drug.toxicity);
+                Console.WriteLine("\n");
+            }
+
+            /*
+            Console.WriteLine("************************************************************************************************************************************************");
+            Console.WriteLine("       ----------        - DISEASES -         ----------");
+            foreach (DiseaseResult diseaseResult in result.foundDiseases)
+            {
+                if (diseaseResult.diseases.Count > 0)
+                {
+                    Console.WriteLine("*********************************************************************************************");
+                    Console.WriteLine("Matching score : " + diseaseResult.symptomScore + "\n");
+                    //Console.WriteLine("Diseases found from symptom block :\n " + diseaseResult.matchingSymtom + "\n\n");
+
+                    foreach (Disease disease in diseaseResult.diseases)
+                    {
+                        Console.WriteLine("Disease name : " + disease.diseaseName);
+                        if (disease.diseaseFrequency != 7)
+                        {
+                            Console.WriteLine("     Frequency : " + disease.diseaseFrequency + "\n");
+                        }
+                        else
+                        {
+                            Console.WriteLine("     Frequency : UNKNOWN\n");
+                        }
+                        if (disease.cures.Count > 0)
+                        {
+                            Console.WriteLine("     KNOWN CURES OR TREATMENT FOR DISEASE : ");
+                            foreach (Drug drug in disease.cures)
+                            {
+                                Console.WriteLine("         Drug name : " + drug.drugName);
+                                Console.WriteLine("             Indication : \n" + drug.indication);
+                            }
+                        }
+                    }
+                    if (diseaseResult.symptomCures.Count > 0)
+                    {
+                        Console.WriteLine("Suggested drugs to appease the symptom : ");
+                        foreach (Drug cure in diseaseResult.symptomCures)
+                        {
+                            Console.WriteLine("     Drug name : " + cure.drugName);
+                            Console.WriteLine("         Indication : " + cure.indication);
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("       ----------        - DRUGS -         ----------");
+
+            foreach (DrugResult drugResult in result.foundDrugCause)
+            {
+                
+                foreach (Drug cure in drugResult.drugs)
+                {
+                    Console.WriteLine("********************************************************************************");
+                    Console.WriteLine("Drug name : " + cure.drugName);
+                    Console.WriteLine("     -> Frequence : " + drugResult.frequence);
+                    Console.WriteLine("     -> Toxicity : " + cure.toxicity);
+                }
+                
+            }*/
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
-
         }
     }
 }
