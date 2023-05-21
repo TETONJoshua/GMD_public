@@ -458,7 +458,7 @@ namespace GMD.Services
                     Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                     string drugName = resultDoc.Get("drugName");
                     string indic = resultDoc.Get("indication");
-                    if (drugName != null && topDocs.ScoreDocs[i].Score > 2)
+                    if (drugName != null && topDocs.ScoreDocs[i].Score > 0.5)
                     {
                         suggestedDrugs.Add(new Drug(drugName, indic));
                     }

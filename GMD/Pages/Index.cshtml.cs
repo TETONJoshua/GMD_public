@@ -98,7 +98,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
                     
-            string symptom = "Loss of Nails;Erosions;Joints contractures";
+            string symptom = "fever;necrosis;red skin;Itchy;plaque";
 
             stopwatch.Restart();
 
@@ -125,8 +125,8 @@ namespace GMD.Pages
                         if (diseasesDictStr.ContainsKey(disease.diseaseName))
                         {
                              
-                            diseasesDict[disease.diseaseName].score = diseasesDict[disease.diseaseName].score *(1+disR.symptomScore) ;
-                            diseasesDictStr[disease.diseaseName] = diseasesDictStr[disease.diseaseName] *(1 + disR.symptomScore);
+                            diseasesDict[disease.diseaseName].score = diseasesDict[disease.diseaseName].score +disR.symptomScore ;
+                            diseasesDictStr[disease.diseaseName] = diseasesDictStr[disease.diseaseName]  + disR.symptomScore;
                             
                         }
                         else
@@ -143,14 +143,14 @@ namespace GMD.Pages
                     {
                         if (drugsDict.ContainsKey(drug.drugName))
                         {
-                            drugsDict[drug.drugName].drugScore *= 10;
-                            drugsDictStr[drug.drugName] *= 10;
+                            drugsDict[drug.drugName].drugScore = drugsDict[drug.drugName].drugScore * 2 ;
+                            drugsDictStr[drug.drugName] *= 2;
                         }
                         else
-                        {
+                        {                           
                             drug.drugScore = 1;
                             drugsDict.Add(drug.drugName, drug);
-                            drugsDictStr.Add(drug.drugName, 10);
+                            drugsDictStr.Add(drug.drugName, 1);
                         }
                     }
                 }
@@ -161,7 +161,7 @@ namespace GMD.Pages
             Dictionary<string, float> diseasesResultsStr = new Dictionary<string, float>();
             List<Disease> orderedDiseasesResults = new List<Disease>();
             Dictionary<string, float> drugsResultsStr = new Dictionary<string, float>();
-            List<Drug> drugsResults = new List<Drug>();
+            List<Drug> orderedDrugsResults = new List<Drug>();
             int i = 0, j = 0;
             foreach (var disease in orderedDiseases)
             {
@@ -182,11 +182,34 @@ namespace GMD.Pages
                     break;
                 }
                 i++;
+                
             }
-            
-
-            foreach(var disease in orderedDiseasesResults)
+            i = 0;
+            foreach (var drug in orderedDrugs)
             {
+                if (i < MAX_RESULTS_DRUG)
+                {
+                    foreach (string drugRec in drugsDict.Keys)
+                    {
+                        if (drug.Key == drugRec)
+                        {
+                            drugsDict[drugRec].drugScore += drug.Value;
+                            orderedDrugsResults.Add(drugsDict[drugRec]);
+                        }
+
+                    }
+                }
+                else
+                {
+                    break;
+                }
+                i++;
+            }
+
+            Console.WriteLine(" ----------------------------- DISEASES\n\n");
+            foreach (var disease in orderedDiseasesResults)
+            {
+                Console.WriteLine("\n");
                 Console.WriteLine(" -> DISEASE NAME : " +  disease.diseaseName);
                 Console.WriteLine(" -> DISEASE Score : " +  disease.score);
                 Console.WriteLine(" -> Associated cure : ");
@@ -196,6 +219,16 @@ namespace GMD.Pages
                     Console.WriteLine("     -> Indication  : " + cure.indication);
 
                 }
+                Console.WriteLine("\n");
+            }
+            Console.WriteLine(" ----------------------------- DRUGS\n\n");
+            foreach (var drug in orderedDrugsResults)
+            {
+                Console.WriteLine("\n");
+                Console.WriteLine(" -> DRUG NAME : " + drug.drugName);
+                Console.WriteLine(" -> DRUG Score : " + drug.drugScore);
+                Console.WriteLine(" -> Toxicity : " + drug.toxicity);
+                Console.WriteLine("\n");
             }
 
             /*
