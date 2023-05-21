@@ -65,6 +65,10 @@ namespace GMD.Services
             foreach (RecordDrugBankXML drug in drugBankDatas)
             {
                 Document doc = new Document();
+                if (drug.name == "Clopidogrel")
+                {
+                    Console.WriteLine(drug.name);
+                }
                 doc.Add(new StringField("drugName", drug.name, Field.Store.YES));
                 doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
                 doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));

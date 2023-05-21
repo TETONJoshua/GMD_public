@@ -25,7 +25,7 @@ namespace GMD.Services
                         // Création d'un objet DataEntry et ajout à la liste
                         Chemical entry = new Chemical
                         {
-                            CID = parts[1].Replace("s", "1"),
+                            CID = parts[0].Replace("m", "1"),
                             ATC = parts[3]
                         };
 
@@ -46,6 +46,7 @@ namespace GMD.Services
             {
                 Document doc = new Document();
                 doc.Add(new StringField("CID", drug.CID, Field.Store.YES));
+                
                 doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
                 writer.AddDocument(doc);
             }

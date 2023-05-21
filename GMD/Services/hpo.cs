@@ -61,7 +61,7 @@ namespace GMD.Services
             Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (RecordHPO data in HPODatas)
             {
-                if(data.xrefs.Count == 1)
+                if(data.xrefs.Count > 0 )
                 {
 
                     Document doc = new Document();
@@ -69,19 +69,27 @@ namespace GMD.Services
                     //doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
                     //doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
                     doc.Add(new TextField("definition", data.definition, Field.Store.YES));
-                    doc.Add(new StringField("CUI", data.xrefs[0], Field.Store.YES));
+                    foreach(string xref in data.xrefs) 
+                    {
+                        doc.Add(new StringField("CUI", xref , Field.Store.YES));
+                    }
+                    
                     string turboSyno = "";
                     foreach (string synonym in data.synonyms)
                     {
                         turboSyno += synonym + " ; ";
                     }
                     turboSyno += data.name + " ; ";
-                    turboSyno += data.definition + " ; ";
+                    if (data.term_id.Contains("HP:0001423"))
+                    {
+                        Console.WriteLine(data.name);
+                    }
+                    //turboSyno += data.definition + " ; ";
                     doc.Add(new TextField("symptoms", turboSyno, Field.Store.YES));
-                    foreach (string isa in data.is_a)
+                    /*foreach (string isa in data.is_a)
                     {
                         doc.Add(new StringField("HP", isa, Field.Store.YES));
-                    }
+                    }*/
                     writer.AddDocument(doc);
                 }
                
