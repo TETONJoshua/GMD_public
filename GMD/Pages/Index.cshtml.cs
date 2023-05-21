@@ -35,7 +35,8 @@ namespace GMD.Pages
             //Open the Directory using a Lucene Directory class
             string indexName = "lucene_index";
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
-
+            int MAX_RESULTS_DIS = 5;
+            int MAX_RESULTS_DRUG = 5;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -97,13 +98,107 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
                     
-            string symptom = "fever cough";
+            string symptom = "Loss of Nails;Erosions;Joints contractures";
 
             stopwatch.Restart();
 
 
             //Console.WriteLine("Search for CUI for " + symptom);
-            QueryResult result =  QueryManager.getQueryResult(standardAnalyzer, searcher, symptom, luceneVersion);
+            string[] brokenSymptom = symptom.Split(";");    
+            List<QueryResult> queryResults = new List<QueryResult>();
+            foreach (string sympt in brokenSymptom)
+            {
+                Console.WriteLine("Researched symptoms : " + sympt);
+                queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, sympt, luceneVersion));
+            }
+            Dictionary<string, Disease> diseasesDict = new Dictionary<string, Disease>();
+            Dictionary<string, float> diseasesDictStr = new Dictionary<string, float>();
+            Dictionary<string, Drug> drugsDict = new Dictionary<string, Drug>();
+            Dictionary<string, float> drugsDictStr = new Dictionary<string, float>();
+            
+            foreach (QueryResult queryResult in queryResults)
+            {
+                foreach (DiseaseResult disR in queryResult.foundDiseases) 
+                { 
+                    foreach(Disease disease in disR.diseases)
+                    {                        
+                        if (diseasesDictStr.ContainsKey(disease.diseaseName))
+                        {
+                             
+                            diseasesDict[disease.diseaseName].score = diseasesDict[disease.diseaseName].score *(1+disR.symptomScore) ;
+                            diseasesDictStr[disease.diseaseName] = diseasesDictStr[disease.diseaseName] *(1 + disR.symptomScore);
+                            
+                        }
+                        else
+                        {
+                            disease.score = 1+disR.symptomScore;
+                            diseasesDict.Add(disease.diseaseName, disease);
+                            diseasesDictStr.Add(disease.diseaseName, disR.symptomScore);
+                        }
+                    }
+                }
+                foreach (DrugResult drugR in queryResult.foundDrugCause)
+                {
+                    foreach (Drug drug in drugR.drugs)
+                    {
+                        if (drugsDict.ContainsKey(drug.drugName))
+                        {
+                            drugsDict[drug.drugName].drugScore *= 10;
+                            drugsDictStr[drug.drugName] *= 10;
+                        }
+                        else
+                        {
+                            drug.drugScore = 1;
+                            drugsDict.Add(drug.drugName, drug);
+                            drugsDictStr.Add(drug.drugName, 10);
+                        }
+                    }
+                }
+            }
+
+            var orderedDiseases = diseasesDictStr.OrderByDescending(x => x.Value);
+            var orderedDrugs = drugsDictStr.OrderByDescending(x => x.Value);
+            Dictionary<string, float> diseasesResultsStr = new Dictionary<string, float>();
+            List<Disease> orderedDiseasesResults = new List<Disease>();
+            Dictionary<string, float> drugsResultsStr = new Dictionary<string, float>();
+            List<Drug> drugsResults = new List<Drug>();
+            int i = 0, j = 0;
+            foreach (var disease in orderedDiseases)
+            {
+                if (i < MAX_RESULTS_DIS)
+                {
+                    foreach (string diseaseRec in diseasesDict.Keys)
+                    {
+                        if (disease.Key == diseaseRec)
+                        {
+                            diseasesDict[diseaseRec].score += disease.Value;
+                            orderedDiseasesResults.Add(diseasesDict[diseaseRec]);
+                        }
+
+                    }
+                }
+                else
+                {
+                    break;
+                }
+                i++;
+            }
+            
+
+            foreach(var disease in orderedDiseasesResults)
+            {
+                Console.WriteLine(" -> DISEASE NAME : " +  disease.diseaseName);
+                Console.WriteLine(" -> DISEASE Score : " +  disease.score);
+                Console.WriteLine(" -> Associated cure : ");
+                foreach(Drug cure in disease.cures)
+                {
+                    Console.WriteLine("     -> Drug name  : " + cure.drugName);
+                    Console.WriteLine("     -> Indication  : " + cure.indication);
+
+                }
+            }
+
+            /*
             Console.WriteLine("************************************************************************************************************************************************");
             Console.WriteLine("       ----------        - DISEASES -         ----------");
             foreach (DiseaseResult diseaseResult in result.foundDiseases)
@@ -159,7 +254,7 @@ namespace GMD.Pages
                     Console.WriteLine("     -> Toxicity : " + cure.toxicity);
                 }
                 
-            }
+            }*/
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
         }

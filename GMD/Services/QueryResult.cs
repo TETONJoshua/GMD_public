@@ -23,6 +23,7 @@
     public class DrugResult
     {
         public string frequence { get; set; }
+        
         public List<Drug> drugs { get; set; }
 
         public DrugResult (string frequence, List<Drug> drugs)
@@ -49,6 +50,7 @@
     }
     public class Disease
     {
+        public float score { get; set; }
         public string diseaseName { get; set; }
         public int diseaseFrequency { get; set; }
         public List<string> synonyms { get; set; }
@@ -81,6 +83,8 @@
         public string drugName { get; set; }
         public string toxicity { get; set;}
         public string indication { get; set;}
+
+        public float drugScore { get; set; }
 
         public Drug(string drugName, string toxicity, string indication)
         {

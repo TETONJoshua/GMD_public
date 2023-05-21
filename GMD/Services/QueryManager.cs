@@ -18,7 +18,7 @@ namespace GMD.Services
     {
         public static List<DrugResult> getMoleculesFromSymptoms(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
-            Console.WriteLine("Researched symptoms : " + symptom);
+            
             QueryParser parser = new QueryParser(luceneVersion, "toxicity", standardAnalyzer);
             //parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
@@ -249,9 +249,9 @@ namespace GMD.Services
         public static List<DiseaseResult> getDiseasesFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
             QueryParser parser = new QueryParser(luceneVersion, "symptoms", standardAnalyzer);
-            //parser.DefaultOperator = QueryParser.AND_OPERATOR;
+            parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 5);
+            TopDocs topDocs = searcher.Search(query, n: 10);
             string UMLS;
             List<string> UMLSs = new List<string>();
             List<DiseaseResult> allDiseasesResults = new List<DiseaseResult>();
@@ -292,6 +292,11 @@ namespace GMD.Services
                         UMLSs.Add(UMLS);
                         var symptomTreatments = getCIDFromCUI_INDIC(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score);
                         symptomTreatments.AddRange(getTreatmentsForDisease(searcher, symptom, luceneVersion, standardAnalyzer ));
+                        if (topDocs.ScoreDocs[i].Score > 2)
+                        {
+                            Console.WriteLine(symptoms);
+                        }
+                        Console.WriteLine(topDocs.ScoreDocs[i].Score);
                         allDiseasesResults.Add(new DiseaseResult(symptoms, topDocs.ScoreDocs[i].Score, diseases, symptomTreatments));
                     }
                 }
@@ -312,7 +317,7 @@ namespace GMD.Services
             {
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string name = resultDoc.Get("name");
-                
+               
                 //Console.WriteLine(definition);
                 string hp = resultDoc.Get("HP");
                 //Console.WriteLine(hp);
@@ -388,7 +393,7 @@ namespace GMD.Services
         public static List<Disease> getTitleFromUMLS(IndexSearcher searcher, string UMLS, LuceneVersion luceneVersion, Analyzer standardAnalyzer)
         {
             Query query = new TermQuery(new Term("CUI_onto", UMLS));
-            TopDocs topDocs = searcher.Search(query, n: 20);
+            TopDocs topDocs = searcher.Search(query, n: 10);
             List<string> names = new List<string>();
             List<Disease> diseases = new List<Disease>();
             List<string> titleOmim = new List<string>();
@@ -412,15 +417,20 @@ namespace GMD.Services
         {
             List<DiseaseResult> diseaseResults = new List<DiseaseResult>();
             QueryParser  parser = new QueryParser(luceneVersion, "symptomsOmim", standardAnalyzer);
-            //parser.DefaultOperator = QueryParser.AND_OPERATOR;
+            parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptoms);
            
-            TopDocs topDocs = searcher.Search(query, n: 3);
+            TopDocs topDocs = searcher.Search(query, n: 50);
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
+                
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string sym = resultDoc.Get("symptomsOmim");
-                
+                if (topDocs.ScoreDocs[i].Score > 10)
+                {
+                    Console.WriteLine("OMIM : " + sym);
+                }
+                //Console.WriteLine(topDocs.ScoreDocs[i].Score);
                 string title = resultDoc.Get("name");
                 string classID = resultDoc.Get("classID");
                 if (title != "" && title != null)
