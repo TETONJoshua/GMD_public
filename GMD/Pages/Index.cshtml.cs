@@ -15,6 +15,7 @@ using Lucene.Net.Util;
 using System.Diagnostics;
 using LuceneDirectory = Lucene.Net.Store.Directory;
 using static Lucene.Net.Util.Packed.PackedInt32s;
+using GMD.Model;
 
 namespace GMD.Pages
 {
@@ -22,6 +23,10 @@ namespace GMD.Pages
     {
         public const LuceneVersion luceneVersion = LuceneVersion.LUCENE_48;
         private readonly ILogger<IndexModel> _logger;
+        internal List<Disease>? diseases;
+        internal List<Drug>? drugs;
+        internal List<Drug>? drugsCure;
+        internal string symptoms;
 
         public IndexModel(ILogger<IndexModel> logger)
         {
@@ -35,9 +40,9 @@ namespace GMD.Pages
             //Open the Directory using a Lucene Directory class
             string indexName = "lucene_index";
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
-            int MAX_RESULTS_DIS = 5;
-            int MAX_RESULTS_DRUG = 5;
-            int MAX_SYMPTOMS_CURE = 5;
+            int MAX_RESULTS_DIS = 20;
+            int MAX_RESULTS_DRUG = 20;
+            int MAX_SYMPTOMS_CURE = 20;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -99,7 +104,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
                     
-            string symptom = "Loss of nails";
+            string symptom = "headache";
 
             stopwatch.Restart();
 
@@ -130,14 +135,13 @@ namespace GMD.Pages
                
                 foreach (DiseaseResult disR in queryResult.foundDiseases) 
                 {
-                    symptomsCures.AddRange(disR.symptomCures);
-                    
                     var dis  = disR.diseases.DistinctBy(x => x.diseaseName).ToList();
+                    symptomsCures.AddRange(disR.symptomCures);
                     foreach (Disease disease in dis)
                     {
 
                         //Console.WriteLine(disease.diseaseName);
-                        
+
                         if (diseasesDict.ContainsKey(disease.diseaseName))
                         {
                             
@@ -153,8 +157,8 @@ namespace GMD.Pages
                             diseasesDictStr.Add(disease.diseaseName, disR.symptomScore);
                             diseasesIteration.Add(disease.diseaseName, 1);
                         }
-                        
                     }
+
                 }
                 foreach (DrugResult drugR in queryResult.foundDrugCause)
                 {
@@ -189,7 +193,6 @@ namespace GMD.Pages
                 k++;
                 
             }
-
             var orderedDiseases = diseasesDictStr.OrderByDescending(x => x.Value);
             var orderedDrugs = drugsDictStr.OrderByDescending(x => x.Value);
             Dictionary<string, float> diseasesResultsStr = new Dictionary<string, float>();
@@ -244,8 +247,9 @@ namespace GMD.Pages
                 }
                 
             }
-            var orderedSymptomsCures = symptomsCures.DistinctBy(x => x.drugName).OrderByDescending(x => x.drugScore);
+            var orderedSymptomsCures = symptomsCures.DistinctBy(x => x.drugName).OrderByDescending(x => x.drugScore).ToList();
             //foreach (var drug in orderedDrugs)
+
 
             Console.WriteLine(" ----------------------------- DISEASES\n\n");
             foreach (var disease in orderedDiseasesResults)
@@ -282,7 +286,7 @@ namespace GMD.Pages
                     Console.WriteLine("\n");
                     Console.WriteLine(" -> DRUG NAME : " + drug.drugName);
                     Console.WriteLine(" -> DRUG Score : " + drug.drugScore);
-                    Console.WriteLine(" -> Indication : " + drug.toxicity);
+                    Console.WriteLine(" -> Indication : " + drug.indication);
                     Console.WriteLine("\n");
                 }
                 else
@@ -293,6 +297,11 @@ namespace GMD.Pages
             }
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
+
+            diseases = orderedDiseasesResults;
+            drugs = orderedDrugsResults;
+            symptoms = symptom;
+            drugsCure = orderedSymptomsCures;
         }
     }
 }

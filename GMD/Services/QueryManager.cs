@@ -217,9 +217,10 @@ namespace GMD.Services
 
         public static List<Drug> getCIDFromCUI_INDIC(IndexSearcher searcher, string CUI, LuceneVersion luceneVersion, float score)
         {
+            Console.WriteLine(CUI);
             string CID;
             Query query = new TermQuery(new Term("CUI", CUI));
-            TopDocs topDocs = searcher.Search(query, n: 10);
+            TopDocs topDocs = searcher.Search(query, n: 10000);
             List<string> CIDs = new List<string>();
             List<Drug> cures = new List<Drug>();
             
@@ -228,8 +229,10 @@ namespace GMD.Services
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 CID = resultDoc.Get("CID");
+                
                 if (CID != "" && CID != null)
                 {
+                    Console.WriteLine(CID);
                     bool known = false;
                     if (CID != "" && CID != null)
                     {
@@ -243,6 +246,8 @@ namespace GMD.Services
                         }
                         if (!known)
                         {
+                            Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                            Console.WriteLine(CID);
                             var curesS = getATCFromCID(searcher, CID, luceneVersion, CUI, score);
                             
                             if (curesS.Count != 0)
@@ -276,8 +281,10 @@ namespace GMD.Services
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 HP = resultDoc.Get("HP");
+                
                 string symptoms = resultDoc.Get("symptoms");
                 string definition = resultDoc.Get("definition");
+                Console.WriteLine(symptoms);
                 bool known = false;
                 List<Disease> diseases = new List<Disease>();
                 
@@ -324,6 +331,7 @@ namespace GMD.Services
 
         public static List<string> getUMLSFromHP(IndexSearcher searcher, string HP)
         {
+            Console.WriteLine(HP);
             //string name="", classID="", HP="", def = "", synonyms="";
             Query query = new TermQuery(new Term("HP", HP));
             TopDocs topDocs = searcher.Search(query, n:10);
@@ -433,8 +441,10 @@ namespace GMD.Services
                 if (title != "" && title != null)
                 {
                     List<Disease> diseases = new List<Disease>();
+                    Disease dis = new Disease(title);
+                    dis.cures = getTreatmentsForDisease(searcher, title, luceneVersion, standardAnalyzer);
                     diseases.Add(new Disease(title));
-                    diseaseResults.Add(new DiseaseResult(sym, topDocs.ScoreDocs[i].Score , diseases, getTreatmentsForDisease(searcher, title, luceneVersion, standardAnalyzer)));
+                    diseaseResults.Add(new DiseaseResult(sym, topDocs.ScoreDocs[i].Score , diseases, getTreatmentsForDisease(searcher, symptoms, luceneVersion, standardAnalyzer)));
                 }
             }
             
@@ -490,12 +500,12 @@ namespace GMD.Services
             Query query = new TermQuery(new Term("CID", CID));
             TopDocs topDocs = searcher.Search(query, n: 10);
             List<Drug> cures = new List<Drug>();
-            
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 atcCode = resultDoc.Get("ATC");
+                Console.WriteLine(CID + "   " + atcCode);
                 if (atcCode != "" && atcCode != null)
                 {
                     cures.AddRange(getNameFromAtc(searcher, atcCode, luceneVersion, CUI, CID, score));
