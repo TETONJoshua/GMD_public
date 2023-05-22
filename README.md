@@ -50,3 +50,9 @@ Click on "Start" in the menu bar, this is the play button without the associated
 You should see a web page open and a console appear. 
 
 The project is launched!
+
+## Complements
+
+The advantage of getting and running the .NET solution directly is that all the dependencies of the different libraries are already installed, you don't have to do any other installation. 
+
+**Warning** You may be asked by the IDE to synchronize the dependencies, just click on the alert popup button.
