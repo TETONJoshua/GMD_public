@@ -30,7 +30,9 @@ Wait for the installation to finish. This may take some time depending on your I
 ## Retrieving the GIT solution
 
 Make sure you have Git installed on your machine. If not, download and install Git from https://git-scm.com/downloads.
-Open a command prompt or terminal. Navigate to the directory where you want to clone the project solution.
+Open a command prompt or terminal.
+
+Navigate to the directory where you want to clone the project solution.
 
 Run the following command to clone the Git repository:
 
