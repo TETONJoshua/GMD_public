@@ -45,7 +45,12 @@ namespace GMD.Services
             {
                 Document doc = new Document();
                 doc.Add(new StringField("drugName", drug.medicName, Field.Store.YES));
+                if (drug.ATC == "B01AC04")
+                {
+                    Console.WriteLine(drug.medicName);
+                }
                 doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
+
                 writer.AddDocument(doc);
             }
             

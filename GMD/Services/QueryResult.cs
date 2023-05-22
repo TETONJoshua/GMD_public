@@ -31,6 +31,11 @@
             this.frequence = frequence;
             this.drugs = drugs;
         }
+
+        public DrugResult()
+        {
+            this.drugs = new List<Drug>();
+        }
     }
 
     public class DiseaseResult
