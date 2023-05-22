@@ -44,15 +44,13 @@ namespace GMD.Services
                             string[] fract = diseaseLabel.Split(";;");
                             if (fract[0].Split(", ").Length > 0)
                             {
-                                //Console.WriteLine("pd");
-                                string tmp;
-                                for (int i=0; i < fract.Length/2; i++)
-                                {
-                                    tmp = fract[fract.Length - 1 - i];
-                                    fract[fract.Length - 1 - i] = fract[i];
-                                    fract[i] = tmp;
-                                }
+                                
                                 diseaseName = fract[0];
+                                
+                            }
+                            else
+                            {
+                                diseaseName = diseaseLabel;
                             }
                            
                             foreach (string syn in fract)
@@ -103,6 +101,10 @@ namespace GMD.Services
             {
                 //Console.WriteLine("CONNARD");
                 Document doc = new Document();
+                /*if (drug.disease_id.Contains("HP:0001423") )
+                {
+                    Console.WriteLine(drug.disease_label);
+                }*/
                 doc.Add(new TextField("name", drug.disease_label, Field.Store.YES));
                 doc.Add(new StringField("HP", drug.disease_id.Trim(), Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));

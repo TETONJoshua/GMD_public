@@ -37,6 +37,7 @@ namespace GMD.Pages
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
             int MAX_RESULTS_DIS = 5;
             int MAX_RESULTS_DRUG = 5;
+            int MAX_SYMPTOMS_CURE = 5;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -98,7 +99,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
                     
-            string symptom = "fever;necrosis;red skin;Itchy;plaque";
+            string symptom = "Large hands;Absent septum pellucidum;Limited knee extension";
 
             stopwatch.Restart();
 
@@ -108,52 +109,85 @@ namespace GMD.Pages
             List<QueryResult> queryResults = new List<QueryResult>();
             foreach (string sympt in brokenSymptom)
             {
-                Console.WriteLine("Researched symptoms : " + sympt);
+                Console.WriteLine("Researched symptoms  ----------------------------------------------- : " + sympt);
                 queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, sympt, luceneVersion));
+                
             }
+            //queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, symptom, luceneVersion));
             Dictionary<string, Disease> diseasesDict = new Dictionary<string, Disease>();
             Dictionary<string, float> diseasesDictStr = new Dictionary<string, float>();
+            Dictionary<string, int> diseasesIteration = new Dictionary<string, int>();
             Dictionary<string, Drug> drugsDict = new Dictionary<string, Drug>();
             Dictionary<string, float> drugsDictStr = new Dictionary<string, float>();
+            Dictionary<string, int> drugsIteration = new Dictionary<string, int>();
             
+            List<Drug> symptomsCures = new List<Drug>();
+
+            int k = 0;
             foreach (QueryResult queryResult in queryResults)
             {
+                
+               
                 foreach (DiseaseResult disR in queryResult.foundDiseases) 
-                { 
-                    foreach(Disease disease in disR.diseases)
-                    {                        
-                        if (diseasesDictStr.ContainsKey(disease.diseaseName))
+                {
+                    symptomsCures.AddRange(disR.symptomCures);
+                    
+                    var dis  = disR.diseases.DistinctBy(x => x.diseaseName).ToList();
+                    foreach (Disease disease in dis)
+                    {
+
+                        //Console.WriteLine(disease.diseaseName);
+                        
+                        if (diseasesDict.ContainsKey(disease.diseaseName))
                         {
-                             
-                            diseasesDict[disease.diseaseName].score = diseasesDict[disease.diseaseName].score +disR.symptomScore ;
-                            diseasesDictStr[disease.diseaseName] = diseasesDictStr[disease.diseaseName]  + disR.symptomScore;
                             
+                            diseasesDict[disease.diseaseName].score = diseasesDict[disease.diseaseName].score + disR.symptomScore;
+                            diseasesDictStr[disease.diseaseName] = diseasesDictStr[disease.diseaseName] + disR.symptomScore;
+                            diseasesIteration[disease.diseaseName]+=1;
+
                         }
-                        else
+                        else if (k == 0)
                         {
-                            disease.score = 1+disR.symptomScore;
+                            disease.score = disR.symptomScore;
                             diseasesDict.Add(disease.diseaseName, disease);
                             diseasesDictStr.Add(disease.diseaseName, disR.symptomScore);
+                            diseasesIteration.Add(disease.diseaseName, 1);
                         }
+                        
                     }
                 }
                 foreach (DrugResult drugR in queryResult.foundDrugCause)
                 {
+                    bool known = false;
+                    
                     foreach (Drug drug in drugR.drugs)
                     {
-                        if (drugsDict.ContainsKey(drug.drugName))
+                        
+                        if (!known)
                         {
-                            drugsDict[drug.drugName].drugScore = drugsDict[drug.drugName].drugScore * 2 ;
-                            drugsDictStr[drug.drugName] *= 2;
-                        }
-                        else
-                        {                           
-                            drug.drugScore = 1;
-                            drugsDict.Add(drug.drugName, drug);
-                            drugsDictStr.Add(drug.drugName, 1);
-                        }
+                            
+                            if (drugsDict.ContainsKey(drug.drugName))
+                            {
+                                known = true;
+                                //Console.WriteLine(drug.drugName);
+                                drugsDict[drug.drugName].drugScore = drugsDict[drug.drugName].drugScore + drug.drugScore;
+                                drugsDictStr[drug.drugName] = drugsDictStr[drug.drugName] + drug.drugScore;
+                                drugsIteration[drug.drugName] += 1;
+                            }
+                            else if (k == 0)
+                            {
+                                known = true;
+                                //Console.WriteLine(drug.drugName);
+                                drugsIteration.Add(drug.drugName, 1);
+                                drugsDict.Add(drug.drugName, drug);
+                                drugsDictStr.Add(drug.drugName, drug.drugScore);
+                            }
+                        }                     
+                       
                     }
                 }
+                k++;
+                
             }
 
             var orderedDiseases = diseasesDictStr.OrderByDescending(x => x.Value);
@@ -162,49 +196,56 @@ namespace GMD.Pages
             List<Disease> orderedDiseasesResults = new List<Disease>();
             Dictionary<string, float> drugsResultsStr = new Dictionary<string, float>();
             List<Drug> orderedDrugsResults = new List<Drug>();
-            int i = 0, j = 0;
+            int i = 0;
+
             foreach (var disease in orderedDiseases)
             {
-                if (i < MAX_RESULTS_DIS)
+                if (diseasesIteration[disease.Key] >= k)
                 {
-                    foreach (string diseaseRec in diseasesDict.Keys)
+                    if (i < MAX_RESULTS_DIS)
                     {
-                        if (disease.Key == diseaseRec)
+                        foreach (string diseaseRec in diseasesDict.Keys)
                         {
-                            diseasesDict[diseaseRec].score += disease.Value;
-                            orderedDiseasesResults.Add(diseasesDict[diseaseRec]);
+                            if (disease.Key == diseaseRec)
+                            {
+                                diseasesDict[diseaseRec].score = disease.Value;
+                                orderedDiseasesResults.Add(diseasesDict[diseaseRec]);
+                            }
                         }
-
                     }
+                    else
+                    {
+                        break;
+                    }
+                    i++;
                 }
-                else
-                {
-                    break;
-                }
-                i++;
-                
             }
             i = 0;
             foreach (var drug in orderedDrugs)
             {
-                if (i < MAX_RESULTS_DRUG)
+                if (drugsIteration[drug.Key] == k)
                 {
-                    foreach (string drugRec in drugsDict.Keys)
+                    if (i < MAX_RESULTS_DRUG)
                     {
-                        if (drug.Key == drugRec)
+                        foreach (string drugRec in drugsDict.Keys)
                         {
-                            drugsDict[drugRec].drugScore += drug.Value;
-                            orderedDrugsResults.Add(drugsDict[drugRec]);
+                            if (drug.Key == drugRec)
+                            {
+                                drugsDict[drugRec].drugScore = drug.Value;
+                                orderedDrugsResults.Add(drugsDict[drugRec]);
+                            }
                         }
-
                     }
+                    else
+                    {
+                        break;
+                    }
+                    i++;
                 }
-                else
-                {
-                    break;
-                }
-                i++;
+                
             }
+            var orderedSymptomsCures = symptomsCures.DistinctBy(x => x.drugName).OrderByDescending(x => x.drugScore);
+            //foreach (var drug in orderedDrugs)
 
             Console.WriteLine(" ----------------------------- DISEASES\n\n");
             foreach (var disease in orderedDiseasesResults)
@@ -231,63 +272,25 @@ namespace GMD.Pages
                 Console.WriteLine("\n");
             }
 
-            /*
-            Console.WriteLine("************************************************************************************************************************************************");
-            Console.WriteLine("       ----------        - DISEASES -         ----------");
-            foreach (DiseaseResult diseaseResult in result.foundDiseases)
-            {
-                if (diseaseResult.diseases.Count > 0)
-                {
-                    Console.WriteLine("*********************************************************************************************");
-                    Console.WriteLine("Matching score : " + diseaseResult.symptomScore + "\n");
-                    //Console.WriteLine("Diseases found from symptom block :\n " + diseaseResult.matchingSymtom + "\n\n");
+            Console.WriteLine(" ----------------------------- SYMPTOMS CURES\n\n");
+            int j = 0;
 
-                    foreach (Disease disease in diseaseResult.diseases)
-                    {
-                        Console.WriteLine("Disease name : " + disease.diseaseName);
-                        if (disease.diseaseFrequency != 7)
-                        {
-                            Console.WriteLine("     Frequency : " + disease.diseaseFrequency + "\n");
-                        }
-                        else
-                        {
-                            Console.WriteLine("     Frequency : UNKNOWN\n");
-                        }
-                        if (disease.cures.Count > 0)
-                        {
-                            Console.WriteLine("     KNOWN CURES OR TREATMENT FOR DISEASE : ");
-                            foreach (Drug drug in disease.cures)
-                            {
-                                Console.WriteLine("         Drug name : " + drug.drugName);
-                                Console.WriteLine("             Indication : \n" + drug.indication);
-                            }
-                        }
-                    }
-                    if (diseaseResult.symptomCures.Count > 0)
-                    {
-                        Console.WriteLine("Suggested drugs to appease the symptom : ");
-                        foreach (Drug cure in diseaseResult.symptomCures)
-                        {
-                            Console.WriteLine("     Drug name : " + cure.drugName);
-                            Console.WriteLine("         Indication : " + cure.indication);
-                        }
-                    }
+            foreach (var drug in orderedSymptomsCures)
+            {
+                if (j < MAX_SYMPTOMS_CURE)
+                {
+                    Console.WriteLine("\n");
+                    Console.WriteLine(" -> DRUG NAME : " + drug.drugName);
+                    Console.WriteLine(" -> DRUG Score : " + drug.drugScore);
+                    Console.WriteLine(" -> Indication : " + drug.toxicity);
+                    Console.WriteLine("\n");
                 }
+                else
+                {
+                    break;
+                }
+                j++;
             }
-            Console.WriteLine("       ----------        - DRUGS -         ----------");
-
-            foreach (DrugResult drugResult in result.foundDrugCause)
-            {
-                
-                foreach (Drug cure in drugResult.drugs)
-                {
-                    Console.WriteLine("********************************************************************************");
-                    Console.WriteLine("Drug name : " + cure.drugName);
-                    Console.WriteLine("     -> Frequence : " + drugResult.frequence);
-                    Console.WriteLine("     -> Toxicity : " + cure.toxicity);
-                }
-                
-            }*/
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
         }
