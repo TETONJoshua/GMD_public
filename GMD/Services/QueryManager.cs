@@ -448,6 +448,17 @@ namespace GMD.Services
             {
                 diseaseName = diseaseName.ToLower().Replace("disease", "");
                 diseaseName = diseaseName.ToLower().Replace("syndrome", "");
+                diseaseName = diseaseName.ToLower().Replace("type", "");
+                diseaseName = diseaseName.ToLower().Replace("0", "");
+                diseaseName = diseaseName.ToLower().Replace("1", "");
+                diseaseName = diseaseName.ToLower().Replace("2", "");
+                diseaseName = diseaseName.ToLower().Replace("3", "");
+                diseaseName = diseaseName.ToLower().Replace("4", "");
+                diseaseName = diseaseName.ToLower().Replace("5", "");
+                diseaseName = diseaseName.ToLower().Replace("6", "");
+                diseaseName = diseaseName.ToLower().Replace("7", "");
+                diseaseName = diseaseName.ToLower().Replace("8", "");
+                diseaseName = diseaseName.ToLower().Replace("9", "");
                 QueryParser parser = new QueryParser(luceneVersion, "indication", standardAnalyzer);
                 Query query = parser.Parse(diseaseName);
                 TopDocs topDocs = searcher.Search(query, n: 3);
@@ -457,9 +468,8 @@ namespace GMD.Services
                     Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                     string drugName = resultDoc.Get("drugName");
                     string indic = resultDoc.Get("indication");
-                    if (drugName != null && topDocs.ScoreDocs[i].Score > 0.5)
+                    if (drugName != null && topDocs.ScoreDocs[i].Score > 1)
                     {
-
                         Drug drug = new Drug(drugName, indic);
                         drug.drugScore = topDocs.ScoreDocs[i].Score;
                         suggestedDrugs.Add(drug);

@@ -99,7 +99,7 @@ namespace GMD.Pages
             IndexSearcher searcher = new IndexSearcher(reader);
 
                     
-            string symptom = "Large hands;Absent septum pellucidum;Limited knee extension";
+            string symptom = "Loss of nails";
 
             stopwatch.Restart();
 
