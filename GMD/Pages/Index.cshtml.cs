@@ -64,6 +64,7 @@ namespace GMD.Pages
             ominCSV ominCSV = new ominCSV();
             ominTXT ominTXT = new ominTXT();
             sqlite_Parser sqliteParser = new sqlite_Parser();
+            checkMapping checkMapp = new checkMapping();
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -80,7 +81,9 @@ namespace GMD.Pages
             List<sqlite> sqlitesDatas = sqliteParser.ParseSqlite();
             stopwatch.Stop();
 
-            Console.WriteLine("Total Parse Time : " + stopwatch.Elapsed);
+            checkMapp.MappingQuality(hpoDatas, keggDatas, drugBankDatas, chemicalsDatas, ominTxtDatas, ominCsvDatas, meddraDatas, sqlitesDatas, meddraFreqDatas, meddraSeDatas, meddraIndicationsData);
+
+            Console.WriteLine("Total Parse Time : " +  stopwatch.Elapsed);
 
             stopwatch.Restart();
 
@@ -95,6 +98,7 @@ namespace GMD.Pages
             meddraSEParse.indexMeddraSEDatas(meddraSeDatas, writer);
             meddraIndParse.indexMeddraIndicationDatas(meddraIndicationsData, writer);
             meddra.indexMeddraDatas(meddraDatas, writer);
+
 
             stopwatch.Stop();
 
