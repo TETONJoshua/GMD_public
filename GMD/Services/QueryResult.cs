@@ -56,6 +56,7 @@
     public class Disease
     {
         public float score { get; set; }
+        public string sourceDoc { get; set; }
         public string diseaseName { get; set; }
         public int diseaseFrequency { get; set; }
         public List<string> synonyms { get; set; }
@@ -85,6 +86,7 @@
 
     public class Drug
     {
+        public string sourceDoc { get; set; }
         public string drugName { get; set; }
         public string toxicity { get; set;}
         public string indication { get; set;}
