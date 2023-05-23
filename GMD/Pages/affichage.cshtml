@@ -8,6 +8,10 @@
     {
         <div><p style="color: #f7f7f7; font-weight: bold;"> Reported symptoms : @Model.symptoms.Replace(";"," ")</p></div>
     }
+    @if (Model.queryTime != "")
+    {
+        <span class="score">Query time : @Model.queryTime</span>
+    }
     <div class="row">
         <div class="results col-sm-4">
             @if (Model.diseases != null)
@@ -24,7 +28,7 @@
                 {
                     <div class="symptom">
                         <div class="disease">
-                            <p class="diseaseName">Name : @disease.diseaseName </p>
+                            <p class="diseaseName">Name : <b>@disease.diseaseName</b> </p>
                         </div>
                         <p class="cure">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-prescription2" viewBox="0 0 16 16">
@@ -37,8 +41,11 @@
                             @foreach (var drug in disease.cures)
                             {
                                 <div class="drug">
-                                    <p class="drugName"> @drug.drugName </p>
-                                    <p class="cure"><span class="indication"> Indication : </span> @drug.indication </p>
+                                    <p class="drugName"> @drug.drugName        <span class="score">Source: @drug.sourceDoc</span></p>
+                                    @if(drug.indication != "")
+                                    {
+                                        <p class="cure"><span class="indication"> Indication : </span> @drug.indication </p>
+                                    }
                                 </div>
                             }
                         }
@@ -69,11 +76,15 @@
                 {
                     <div class="symptom">
                         <div class="disease">
-                            <p class="drugName"> Name : @drug.drugName </p>
-                            <p class="toxicity"> Toxicity : @drug.toxicity </p>
+                            <p class="drugName"> Name : <b>@drug.drugName</b> </p>
+                            @if (drug.toxicity != "")
+                            {
+                                <p class="toxicity"> Toxicity : @drug.toxicity </p>
+                            }
+                            
                         </div>
                         <br>
-                        <span class="score">Score: @drug.drugScore</span>
+                        <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
                     </div>
                     <hr class="border border-danger border-2 opacity-50">
                 }
@@ -92,12 +103,12 @@
                 @foreach (var drug in Model.drugsCure)
                 {
                     <div class="symptom">
-                        <div class="disease">
-                            <p class="drugName"> Name : @drug.drugName </p>
+                        <div class="drug">
+                            <p class="drugName"> Name : <b>@drug.drugName</b></p>
                             <p class="toxicity"> Indication : @drug.indication </p>
                         </div>
                         <br>
-                        <span class="score">Score: @drug.drugScore</span>
+                        <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
                     </div>
                     <hr class="border border-danger border-2 opacity-50">
                 }
@@ -112,8 +123,6 @@
     </form>
 </div>
 
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Dlfkxgs1cmyszXG2wVwf6ZJ5dxDS51onq6mLfGvxrAq0yaKqNKwsXWygwnKMLvXcAY65xGJvHxucKsJkAhmykodFmOYQOmi3_eDssf8yOBXmBAoxQAm59m-r8wQKkcY2WjILhDWzMY4whOamP9bJYg" charset="UTF-8"></script>
-<link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jZG4uZGlzY29yZGFwcC5jb20vYXR0YWNobWVudHMvMTEwNTYwNzY5NjY2Njg1MzM3Ni8xMTA5NzUwMTE2NDk3MjI3ODI3L0hUTUxQYWdlMS5odG1s" />
 <style>
     /* Reset default browser styles */
     * {
@@ -137,7 +146,7 @@
 
     /* Container styles */
     .container {
-        max-width: 80%;
+        max-width: 100%;
         margin: 0 auto;
         padding: 20px;
     }
