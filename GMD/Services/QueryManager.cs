@@ -180,8 +180,7 @@ namespace GMD.Services
                 {
                     cure.indication = indic;
                     cure.drugScore = topDocs.ScoreDocs[i].Score;
-                    cure.sourceDoc = "DRUGBANK";
-                    
+                    cure.sourceDoc = "DRUGBANK";                    
                 }
             }
             return cures;
@@ -213,7 +212,7 @@ namespace GMD.Services
                     }
                     if (!known)
                     {
-                        Console.WriteLine($"{CID} score : {topDocs.ScoreDocs[i].Score}");
+                        //Console.WriteLine($"{CID} score : {topDocs.ScoreDocs[i].Score}");
                         CIDs.Add(CID);
                     }                  
                 }
@@ -223,7 +222,7 @@ namespace GMD.Services
 
         public static List<Drug> getCIDFromCUI_INDIC(IndexSearcher searcher, string CUI, LuceneVersion luceneVersion, float score)
         {
-            Console.WriteLine(CUI);
+            //Console.WriteLine(CUI);
             string CID;
             Query query = new TermQuery(new Term("CUI", CUI));
             TopDocs topDocs = searcher.Search(query, n: 10000);
@@ -289,7 +288,7 @@ namespace GMD.Services
                 
                 string symptoms = resultDoc.Get("symptoms");
                 string definition = resultDoc.Get("definition");
-                Console.WriteLine(symptoms);
+                //Console.WriteLine(symptoms);
                 bool known = false;
                 List<Disease> diseases = new List<Disease>();
                 
@@ -307,7 +306,7 @@ namespace GMD.Services
                     if (!known)
                     {
                         diseases.AddRange(getNamesFromHP(searcher, HP, luceneVersion, topDocs.ScoreDocs[i].Score, standardAnalyzer));
-                        //diseases.AddRange(getTitleFromUMLS(searcher, UMLS, luceneVersion, standardAnalyzer));
+                       
                         
                         if (diseases.Count != 0)
                         {
@@ -322,6 +321,7 @@ namespace GMD.Services
                         foreach (string UMLS in UMLSs)
                         {
                             symptomTreatments.AddRange(getCIDFromCUI_INDIC(searcher, UMLS, luceneVersion, topDocs.ScoreDocs[i].Score));
+                            diseases.AddRange(getTitleFromUMLS(searcher, UMLS, luceneVersion, standardAnalyzer));
                         }                       
                         symptomTreatments.AddRange(getTreatmentsForDisease(searcher, symptom, luceneVersion, standardAnalyzer ));
                     
@@ -336,7 +336,7 @@ namespace GMD.Services
 
         public static List<string> getUMLSFromHP(IndexSearcher searcher, string HP)
         {
-            Console.WriteLine(HP);
+            //Console.WriteLine(HP);
             //string name="", classID="", HP="", def = "", synonyms="";
             Query query = new TermQuery(new Term("HP", HP));
             TopDocs topDocs = searcher.Search(query, n:10);
@@ -409,12 +409,14 @@ namespace GMD.Services
             List<string> titleOmim = new List<string>();
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
+               
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 string classID = resultDoc.Get("classID");
                 string strDisease = resultDoc.Get("name");
 
                 if(strDisease != null && strDisease != "")
                 {
+                    Console.WriteLine(strDisease);
                     names.Add(strDisease);
                     diseases.Add(new Disease(strDisease));
                 }

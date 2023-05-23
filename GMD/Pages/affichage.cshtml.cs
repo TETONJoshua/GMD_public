@@ -31,7 +31,7 @@ namespace GMD.Pages
 
             string indexName = "lucene_index";
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
-            int MAX_RESULTS_DIS = 20;
+            int MAX_RESULTS_DIS = 1000;
             int MAX_RESULTS_DRUG = 20;
             int MAX_SYMPTOMS_CURE = 20;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
@@ -240,8 +240,31 @@ namespace GMD.Pages
             }
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
-
+            
             diseases = orderedDiseasesResults;
+            foreach (var disease in orderedDiseasesResults) 
+            {
+                if (disease.diseaseName.StartsWith("#") || disease.diseaseName.StartsWith("%")){
+                    disease.diseaseName = disease.diseaseName.Remove(0, 7);
+                }
+                if (disease.diseaseName.StartsWith("0") || 
+                    disease.diseaseName.StartsWith("1") ||
+                    disease.diseaseName.StartsWith("2") ||
+                    disease.diseaseName.StartsWith("3") ||
+                    disease.diseaseName.StartsWith("4") ||
+                    disease.diseaseName.StartsWith("5") ||
+                    disease.diseaseName.StartsWith("6") ||
+                    disease.diseaseName.StartsWith("7") ||
+                    disease.diseaseName.StartsWith("8") ||
+                    disease.diseaseName.StartsWith("9"))
+                {
+                    disease.diseaseName = disease.diseaseName.Remove(0, 6);
+                }
+                if (disease.diseaseName.Contains(";"))
+                {
+                    disease.diseaseName = disease.diseaseName.Split(';')[0];
+                }
+            }
             drugs = orderedDrugsResults;
             symptoms = symptom;
             drugsCure = orderedSymptomsCures;
