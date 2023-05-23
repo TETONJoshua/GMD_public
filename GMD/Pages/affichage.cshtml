@@ -8,6 +8,10 @@
     {
         <div><p style="color: #f7f7f7; font-weight: bold;"> Reported symptoms : @Model.symptoms.Replace(";"," ")</p></div>
     }
+    @if (Model.queryTime != "")
+    {
+        <span class="score">Query time : @Model.queryTime</span>
+    }
     <div class="row">
         <div class="results col-sm-4">
             <div>

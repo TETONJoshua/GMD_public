@@ -20,6 +20,7 @@ namespace GMD.Pages
         internal List<Drug>? drugs;
         internal List<Drug>? drugsCure;
         internal string symptoms;
+        internal string queryTime;
 
         public void OnGet()
         {
@@ -240,7 +241,7 @@ namespace GMD.Pages
             }
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
-            
+            queryTime = stopwatch.ElapsedMilliseconds.ToString();
             diseases = orderedDiseasesResults;
             foreach (var disease in orderedDiseasesResults) 
             {
@@ -264,6 +265,7 @@ namespace GMD.Pages
                 {
                     disease.diseaseName = disease.diseaseName.Split(';')[0];
                 }
+
             }
             drugs = orderedDrugsResults;
             symptoms = symptom;
