@@ -152,6 +152,10 @@ namespace GMD.Services
                 if (name != "" && name != null)
                 {
                     cures.AddRange(getIndicationFromName(searcher, name, luceneVersion));
+                    foreach(Drug cure in cures)
+                    {
+                        cure.sourceDoc = "MEDDRA_SE";
+                    }
                 }
             }
             return cures;
@@ -176,6 +180,8 @@ namespace GMD.Services
                 {
                     cure.indication = indic;
                     cure.drugScore = topDocs.ScoreDocs[i].Score;
+                    cure.sourceDoc = "DRUGBANK";
+                    
                 }
             }
             return cures;
@@ -246,8 +252,7 @@ namespace GMD.Services
                         }
                         if (!known)
                         {
-                            Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                            Console.WriteLine(CID);
+                            
                             var curesS = getATCFromCID(searcher, CID, luceneVersion, CUI, score);
                             
                             if (curesS.Count != 0)
