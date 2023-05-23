@@ -10,6 +10,8 @@
     }
     <div class="row">
         <div class="results col-sm-4">
+            @if (Model.diseases != null)
+            {
             <div>
                 <p style="color: #f0ad4e; font-weight: bold; ">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-virus" viewBox="0 0 16 16">
@@ -18,8 +20,6 @@
                     Diseases that can cause this :
                 </p>
             </div>
-            @if (Model.diseases != null)
-            {
                 @foreach (var disease in Model.diseases)
                 {
                     <div class="symptom">
@@ -56,6 +56,8 @@
             }
         </div>
         <div class="results col-sm-4">
+            @if (Model.drugs != null)
+            {
             <div>
                 <p style="color: #f0ad4e; font-weight: bold; ">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-capsule-pill" viewBox="0 0 16 16">
@@ -63,8 +65,6 @@
                     </svg> Drugs that can cause this :
                 </p>
             </div>
-            @if (Model.drugs != null)
-            {
                 @foreach (var drug in Model.drugs)
                 {
                     <div class="symptom">
@@ -80,6 +80,8 @@
             }
         </div>
         <div class="results col-sm-4">
+            @if (Model.drugsCure != null)
+            {
             <div>
                 <p style="color: #f0ad4e; font-weight: bold; ">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-capsule-pill" viewBox="0 0 16 16">
@@ -87,8 +89,6 @@
                     </svg> Drugs that can cure this :
                 </p>
             </div>
-            @if (Model.drugsCure != null)
-            {
                 @foreach (var drug in Model.drugsCure)
                 {
                     <div class="symptom">
