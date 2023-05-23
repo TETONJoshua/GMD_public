@@ -22,7 +22,7 @@ namespace GMD.Services
             QueryParser parser = new QueryParser(luceneVersion, "toxicity", standardAnalyzer);
             parser.DefaultOperator = QueryParser.AND_OPERATOR;
             Query query = parser.Parse(symptom);
-            TopDocs topDocs = searcher.Search(query, n: 100);
+            TopDocs topDocs = searcher.Search(query, n: 1);
             int i;
             List<DrugResult> toxicDrugs = new List<DrugResult>();
             List<DrugResult> toxicDrugRes = new List<DrugResult>();
@@ -35,6 +35,7 @@ namespace GMD.Services
                 List<Drug> drugs = new List<Drug>();
                 Drug drugT = new Drug(foundName, tox, "");
                 drugT.drugScore = topDocs.ScoreDocs[i].Score;
+                drugT.sourceDoc = "DRUGBANK";
                 drugs.Add(drugT);
                 toxicDrugs.Add(new DrugResult("Unknown", drugs));
                 
@@ -104,7 +105,7 @@ namespace GMD.Services
         public static List<Drug> getNameFromAtcForSE(IndexSearcher searcher, string atcCode, float score)
         {
             Query query = new TermQuery(new Term("ATC", atcCode));
-            TopDocs topDocs = searcher.Search(query, n: 1);
+            TopDocs topDocs = searcher.Search(query, n: 100);
             List<Drug> drugs = new List<Drug>();
 
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
@@ -130,6 +131,7 @@ namespace GMD.Services
                     }
                     var drugS = new Drug(name, tox, "");
                     drugS.drugScore = score;
+                    drugS.sourceDoc = "MEDDRA_SE";
                     drugs.Add(drugS);
                 }
             }
@@ -151,10 +153,12 @@ namespace GMD.Services
                 name = resultDoc.Get("drugName");
                 if (name != "" && name != null)
                 {
+                    Console.WriteLine(name);
                     cures.AddRange(getIndicationFromName(searcher, name, luceneVersion));
                     foreach(Drug cure in cures)
                     {
-                        cure.sourceDoc = "MEDDRA_SE";
+                        cure.sourceDoc = "MEDDRA_IND";
+                        cure.drugScore = topDocs.ScoreDocs[i].Score;
                     }
                 }
             }
@@ -165,24 +169,22 @@ namespace GMD.Services
         {
             string indic;
 
-            name = name.ToLower().Replace("disease", "");
-            name = name.ToLower().Replace("syndrome", "");
-            Query query = new TermQuery(new Term("drugName", name.ToLower().Replace("disease", "")));
+            Query query = new TermQuery(new Term("drugName", name));
             TopDocs topDocs = searcher.Search(query, n: 1);
             List<Drug> cures = new List<Drug>();
-           
+            Drug cure = new Drug(name);
             for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
             {
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 indic = resultDoc.Get("indication");
-                Drug cure = new Drug(name);
+               
                 if (indic != "" && indic != null)
                 {
                     cure.indication = indic;
-                    cure.drugScore = topDocs.ScoreDocs[i].Score;
-                    cure.sourceDoc = "DRUGBANK";                    
-                }
+                    //cure.drugScore = topDocs.ScoreDocs[i].Score;                    
+                }                
             }
+            cures.Add(cure);
             return cures;
         }
 
@@ -225,7 +227,7 @@ namespace GMD.Services
             //Console.WriteLine(CUI);
             string CID;
             Query query = new TermQuery(new Term("CUI", CUI));
-            TopDocs topDocs = searcher.Search(query, n: 10000);
+            TopDocs topDocs = searcher.Search(query, n: 100);
             List<string> CIDs = new List<string>();
             List<Drug> cures = new List<Drug>();
             
@@ -416,7 +418,7 @@ namespace GMD.Services
 
                 if(strDisease != null && strDisease != "")
                 {
-                    Console.WriteLine(strDisease);
+                    //Console.WriteLine(strDisease);
                     names.Add(strDisease);
                     diseases.Add(new Disease(strDisease));
                 }
@@ -478,7 +480,7 @@ namespace GMD.Services
                 diseaseName = diseaseName.ToLower().Replace("9", "");
                 QueryParser parser = new QueryParser(luceneVersion, "indication", standardAnalyzer);
                 Query query = parser.Parse(diseaseName);
-                TopDocs topDocs = searcher.Search(query, n: 3);
+                TopDocs topDocs = searcher.Search(query, n: 100);
                 List<Drug> suggestedDrugs = new List<Drug>();
                 for (int i = 0; i < topDocs.ScoreDocs.Length; i++)
                 {
@@ -488,6 +490,7 @@ namespace GMD.Services
                     if (drugName != null && topDocs.ScoreDocs[i].Score > 1)
                     {
                         Drug drug = new Drug(drugName, indic);
+                        drug.sourceDoc = "DRUGBANK";
                         drug.drugScore = topDocs.ScoreDocs[i].Score;
                         suggestedDrugs.Add(drug);
                     }
@@ -512,7 +515,7 @@ namespace GMD.Services
                 //read back a doc from results
                 Document resultDoc = searcher.Doc(topDocs.ScoreDocs[i].Doc);
                 atcCode = resultDoc.Get("ATC");
-                Console.WriteLine(CID + "   " + atcCode);
+                //Console.WriteLine(CID + "   " + atcCode);
                 if (atcCode != "" && atcCode != null)
                 {
                     cures.AddRange(getNameFromAtc(searcher, atcCode, luceneVersion, CUI, CID, score));

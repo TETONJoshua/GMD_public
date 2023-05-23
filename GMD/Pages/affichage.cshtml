@@ -41,7 +41,7 @@
                             @foreach (var drug in disease.cures)
                             {
                                 <div class="drug">
-                                    <p class="drugName"> @drug.drugName </p>
+                                    <p class="drugName"> @drug.drugName        <span class="score">Source: @drug.sourceDoc</span></p>
                                     @if(drug.indication != "")
                                     {
                                         <p class="cure"><span class="indication"> Indication : </span> @drug.indication </p>
@@ -84,7 +84,7 @@
                             
                         </div>
                         <br>
-                        <span class="score">Score: @drug.drugScore</span>
+                        <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
                     </div>
                     <hr class="border border-danger border-2 opacity-50">
                 }
@@ -104,11 +104,11 @@
                 {
                     <div class="symptom">
                         <div class="drug">
-                            <p class="drugName"> Name : <b>@drug.drugName</b> </p>
+                            <p class="drugName"> Name : <b>@drug.drugName</b></p>
                             <p class="toxicity"> Indication : @drug.indication </p>
                         </div>
                         <br>
-                        <span class="score">Score: @drug.drugScore</span>
+                        <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
                     </div>
                     <hr class="border border-danger border-2 opacity-50">
                 }

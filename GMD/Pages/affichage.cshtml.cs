@@ -33,8 +33,8 @@ namespace GMD.Pages
             string indexName = "lucene_index";
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
             int MAX_RESULTS_DIS = 1000;
-            int MAX_RESULTS_DRUG = 20;
-            int MAX_SYMPTOMS_CURE = 20;
+            int MAX_RESULTS_DRUG = 1000;
+            int MAX_SYMPTOMS_CURE = 1000;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -195,7 +195,7 @@ namespace GMD.Pages
 
             }
             var orderedSymptomsCures = symptomsCures.DistinctBy(x => x.drugName).OrderByDescending(x => x.drugScore).ToList();
-            Console.WriteLine(" ----------------------------- DISEASES\n\n");
+            /*Console.WriteLine(" ----------------------------- DISEASES\n\n");
             foreach (var disease in orderedDiseasesResults)
             {
                 Console.WriteLine("\n");
@@ -238,7 +238,7 @@ namespace GMD.Pages
                     break;
                 }
                 j++;
-            }
+            }*/
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
             queryTime = stopwatch.ElapsedMilliseconds.ToString();
