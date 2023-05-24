@@ -105,8 +105,8 @@ namespace GMD.Services
                 {
                     Console.WriteLine(drug.disease_label);
                 }*/
-                doc.Add(new TextField("name", drug.disease_label, Field.Store.YES));
-                doc.Add(new StringField("HP", drug.disease_id.Trim(), Field.Store.YES));
+                doc.Add(new TextField("name_SQL", drug.disease_label, Field.Store.YES));
+                doc.Add(new StringField("HP_SQL", drug.disease_id.Trim(), Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
                 //Console.WriteLine(drug.disease_label);
                 doc.Add(new StringField("diseaseFrequency", drug.diseaseFreq, Field.Store.YES));

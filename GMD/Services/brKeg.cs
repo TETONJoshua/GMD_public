@@ -44,12 +44,12 @@ namespace GMD.Services
             foreach (RecordBrKEG drug in keggDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("drugName", drug.medicName, Field.Store.YES));
+                doc.Add(new StringField("drugName_KEG", drug.medicName, Field.Store.YES));
                 if (drug.ATC == "B01AC04")
                 {
                     Console.WriteLine(drug.medicName);
                 }
-                doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
+                doc.Add(new StringField("ATC_KEG", drug.ATC, Field.Store.YES));
 
                 writer.AddDocument(doc);
             }

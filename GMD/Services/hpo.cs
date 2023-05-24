@@ -65,13 +65,13 @@ namespace GMD.Services
                 {
 
                     Document doc = new Document();
-                    doc.Add(new StringField("HP", data.term_id, Field.Store.YES));
+                    doc.Add(new StringField("HP_HPO", data.term_id, Field.Store.YES));
                     //doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
                     //doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
                     doc.Add(new TextField("definition", data.definition, Field.Store.YES));
                     foreach(string xref in data.xrefs) 
                     {
-                        doc.Add(new StringField("CUI", xref , Field.Store.YES));
+                        doc.Add(new StringField("CUI_HPO", xref , Field.Store.YES));
                     }
                     
                     string turboSyno = "";
@@ -80,12 +80,10 @@ namespace GMD.Services
                         turboSyno += synonym + " ; ";
                     }
                     turboSyno += data.name + " ; ";
-                    if (data.term_id.Contains("HP:0001423"))
-                    {
-                        Console.WriteLine(data.name);
-                    }
+
                     //turboSyno += data.definition + " ; ";
-                    doc.Add(new TextField("symptoms", turboSyno, Field.Store.YES));
+                    //Console.WriteLine(turboSyno);
+                    doc.Add(new TextField("symptoms_HPO", turboSyno, Field.Store.YES));
                     /*foreach (string isa in data.is_a)
                     {
                         doc.Add(new StringField("HP", isa, Field.Store.YES));

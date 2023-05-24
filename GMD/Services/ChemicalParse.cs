@@ -45,9 +45,9 @@ namespace GMD.Services
             foreach (Chemical drug in ChemicalDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("CID", drug.CID, Field.Store.YES));
+                doc.Add(new StringField("CID_CHEM", drug.CID, Field.Store.YES));
                 
-                doc.Add(new StringField("ATC", drug.ATC, Field.Store.YES));
+                doc.Add(new StringField("ATC_CHEM", drug.ATC, Field.Store.YES));
                 writer.AddDocument(doc);
             }
             writer.Commit();
