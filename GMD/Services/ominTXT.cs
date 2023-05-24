@@ -110,14 +110,10 @@ namespace GMD.Services
             foreach (RecordOmin drug in drugBankDatas)
             {
                 Document doc = new Document();
-                doc.Add(new TextField("name", drug.Title, Field.Store.YES));
+                doc.Add(new TextField("name_TXT", drug.Title, Field.Store.YES));
                 doc.Add(new StringField("classID", drug.Number.Replace("\n","").Trim(), Field.Store.YES));
                 foreach (string line in drug.ClinicalFeatures)
                 {
-                    if (line.ToLower().Contains("loss of nails"))
-                    {
-                        Console.WriteLine(line.Replace(";", ""));
-                    }
                     doc.Add(new TextField("symptomsOmim", line.Replace(";",""), Field.Store.YES));
                 }
                 writer.AddDocument(doc);
@@ -125,7 +121,7 @@ namespace GMD.Services
 
             writer.Commit();
             stopwatch.Stop();
-            Console.WriteLine("OMIM_TXTindex time : " + stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("OMIM_TXT index time : " + stopwatch.ElapsedMilliseconds);
         }
     }
 }

@@ -86,9 +86,10 @@ namespace GMD.Pages
                     symptomsCures.AddRange(disR.symptomCures);
                     foreach (Disease disease in dis)
                     {
-
-                        //Console.WriteLine(disease.diseaseName);
-
+                        if(disease.diseaseName.Contains("weaver syndrome"))
+                        {
+                            Console.WriteLine(disease.diseaseName); 
+                        }
                         if (diseasesDict.ContainsKey(disease.diseaseName))
                         {
 
@@ -113,7 +114,10 @@ namespace GMD.Pages
 
                     foreach (Drug drug in drugR.drugs)
                     {
-
+                        if (drug.drugName.Contains("Quetiapine"))
+                        {
+                            Console.WriteLine(drug.drugName);
+                        }
                         if (!known)
                         {
 

@@ -49,10 +49,10 @@ namespace GMD.Services
             foreach (RecordOminCSV drug in ominCSVdatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("classID", drug.ClassId, Field.Store.YES));
+                doc.Add(new StringField("classID_onto", drug.ClassId, Field.Store.YES));
                 doc.Add(new StringField("CUI_onto", drug.Cui, Field.Store.YES));
                 doc.Add(new StringField("synonyms", drug.Synonyms, Field.Store.YES));
-                doc.Add(new TextField("name", drug.PreferredLabel, Field.Store.YES));
+                doc.Add(new TextField("name_onto", drug.PreferredLabel, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 

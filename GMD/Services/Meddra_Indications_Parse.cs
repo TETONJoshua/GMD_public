@@ -43,9 +43,9 @@ namespace GMD.Services
             foreach (Meddra_Indications drug in meddIndicationDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("CID", drug.CID, Field.Store.YES));
-                doc.Add(new StringField("CUI", drug.CUI, Field.Store.YES));
-                doc.Add(new TextField("name", drug.Symptom, Field.Store.YES));
+                doc.Add(new StringField("CID_IND", drug.CID, Field.Store.YES));
+                doc.Add(new StringField("CUI_IND", drug.CUI, Field.Store.YES));
+                doc.Add(new TextField("name_IND", drug.Symptom, Field.Store.YES));
                 writer.AddDocument(doc);
             }
 
