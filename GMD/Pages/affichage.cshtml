@@ -44,7 +44,9 @@
     }
    
     <div class="row">
-        <div class="results col-sm-4">
+        <div class="col-sm-4">
+             @if (Model.diseases != null)
+                {
             <div>
                 <p style="color: #f0ad4e; font-weight: bold; ">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-virus" viewBox="0 0 16 16">
@@ -54,13 +56,13 @@
                 </p>
             </div>
             <div class="results">
-                @if (Model.diseases != null)
-                {
                     @foreach (var disease in Model.diseases)
                     {
                         <div class="symptom">
                             <div class="disease">
-                                <p class="diseaseName"><b>@(disease.diseaseName[0].ToString().ToUpper() + disease.diseaseName.Substring(1))</b> </p>
+                                <p class="diseaseName"><b>@(
+                                disease.diseaseName[0].ToString().ToUpper() + disease.diseaseName.Substring(1)
+                                )</b> </p>
                             </div>
                             <p class="cure">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-prescription2" viewBox="0 0 16 16">
@@ -68,13 +70,13 @@
                                     <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v10.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 14.5V4a1 1 0 0 1-1-1V1Zm2 3v10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V4H4ZM3 3h10V1H3v2Z" />
                                 </svg> Possible medication :
                             </p>
-                            @if (disease.cures != null && disease.cures.Count!=0)
+                            @if (disease.cures != null && disease.cures.Count != 0)
                             {
                                 @foreach (var drug in disease.cures)
                                 {
                                     <div class="drug">
                                         <p class="drugName">@drug.drugName</p>
-                                        @if(drug.indication != "")
+                                        @if (drug.indication != "")
                                         {
                                             <p class="cure"><span class="indication"> Indication : </span> @drug.indication </p>
                                             <span class="score">Source: @drug.sourceDoc, Score: @drug.drugScore</span>
@@ -91,52 +93,54 @@
                         </div>
                         <hr class="border border-danger border-2 opacity-50">
                     }
+
+                    </div>
                 }
-            </div>
         </div>
         <div class="col-sm-4">
-            <div>
-                <p style="color: #f0ad4e; font-weight: bold;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-capsule-pill" viewBox="0 0 16 16">
-                        <path d="M11.02 5.364a3 3 0 0 0-4.242-4.243L1.121 6.778a3 3 0 1 0 4.243 4.243l5.657-5.657Zm-6.413-.657 2.878-2.879a2 2 0 1 1 2.829 2.829L7.435 7.536 4.607 4.707ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm-.5 1.042a3 3 0 0 0 0 5.917V9.042Zm1 5.917a3 3 0 0 0 0-5.917v5.917Z" />
-                    </svg> Drugs that can cause this :<span style="font-weight:bold">       @drugNumber</span>
-                </p>
-            </div>
-            <div class="results">
-                @if (Model.drugs != null)
-                {
-                    @foreach (var drug in Model.drugs)
-                    {
-                        <div class="symptom">
-                            <div class="disease">
-                                <p class="drugName"><b>@drug.drugName</b> </p>
-                                @if (drug.toxicity != "")
-                                {
-                                    <p class="toxicity"> Toxicity : @drug.toxicity </p>
-                                }
-                            
+            @if (Model.drugs != null)
+            {
+                <div>
+                    <p style="color: #f0ad4e; font-weight: bold;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-capsule-pill" viewBox="0 0 16 16">
+                            <path d="M11.02 5.364a3 3 0 0 0-4.242-4.243L1.121 6.778a3 3 0 1 0 4.243 4.243l5.657-5.657Zm-6.413-.657 2.878-2.879a2 2 0 1 1 2.829 2.829L7.435 7.536 4.607 4.707ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm-.5 1.042a3 3 0 0 0 0 5.917V9.042Zm1 5.917a3 3 0 0 0 0-5.917v5.917Z" />
+                        </svg> Drugs that can cause this :<span style="font-weight:bold">       @drugNumber</span>
+                    </p>
+                </div>
+                <div class="results">
+                        @foreach (var drug in Model.drugs)
+                        {
+                            <div class="symptom">
+                                <div class="disease">
+                                    <p class="drugName"><b>@drug.drugName</b> </p>
+                                    @if (drug.toxicity != "")
+                                    {
+                                        <p class="toxicity"> Toxicity : @drug.toxicity </p>
+                                    }
+
+                                </div>
+                                <br>
+                                <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
                             </div>
-                            <br>
-                            <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
-                        </div>
-                        <hr class="border border-danger border-2 opacity-50">
-                    }
-                }
+                            <hr class="border border-danger border-2 opacity-50">
+                        }
+                
             </div>
+            }
         </div>
         <div class="col-sm-4">
-            <div>
-                <p style="color: #f0ad4e; font-weight: bold; ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-prescription2" viewBox="0 0 16 16">
-                        <path d="M7 6h2v2h2v2H9v2H7v-2H5V8h2V6Z" />
-                        <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v10.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 14.5V4a1 1 0 0 1-1-1V1Zm2 3v10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V4H4ZM3 3h10V1H3v2Z" />
-                    </svg> Drugs that can cure this :<span style="font-weight:bold">       @cureNumber</span>
-                </p>
-            </div>
-           
-            <div class="results">
-                @if (Model.drugsCure != null)
-                {
+            @if (Model.drugsCure != null)
+            {
+                <div>
+                    <p style="color: #f0ad4e; font-weight: bold; ">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-prescription2" viewBox="0 0 16 16">
+                            <path d="M7 6h2v2h2v2H9v2H7v-2H5V8h2V6Z" />
+                            <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v10.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 14.5V4a1 1 0 0 1-1-1V1Zm2 3v10.5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V4H4ZM3 3h10V1H3v2Z" />
+                        </svg> Drugs that can cure this :<span style="font-weight:bold">       @cureNumber</span>
+                    </p>
+                </div>
+
+                <div class="results">
                     @foreach (var drug in Model.drugsCure)
                     {
                         <div class="symptom">
@@ -149,8 +153,9 @@
                         </div>
                         <hr class="border border-danger border-2 opacity-50">
                     }
-                }
+                    
             </div>
+            }
         </div>
     </div>
     
