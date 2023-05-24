@@ -58,8 +58,6 @@ namespace GMD.Services
             {
                 meddraSECUI.Add(medSE.Code);
                 meddraSECID.Add(medSE.CID.Replace("CID1","CIDm"));
-                Console.WriteLine(medSE.CID.Replace("CID1", "CIDm"));
-
             }
 
             foreach (Meddra_freq medFreq in meddraFreqDatas)
