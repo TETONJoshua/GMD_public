@@ -40,9 +40,6 @@ namespace GMD.Pages
             //Open the Directory using a Lucene Directory class
             string indexName = "lucene_index";
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
-            int MAX_RESULTS_DIS = 20;
-            int MAX_RESULTS_DRUG = 20;
-            int MAX_SYMPTOMS_CURE = 20;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -50,7 +47,7 @@ namespace GMD.Pages
 
             //Create an index writer
             IndexWriterConfig indexConfig = new IndexWriterConfig(luceneVersion, standardAnalyzer);
-            indexConfig.OpenMode = OpenMode.APPEND;                             // create/overwrite index
+            indexConfig.OpenMode = OpenMode.CREATE;                             // create/overwrite index
             IndexWriter writer = new IndexWriter(indexDir, indexConfig);
 
             brKeg dKegg = new brKeg(); //Done

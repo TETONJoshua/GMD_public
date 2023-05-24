@@ -61,9 +61,11 @@ namespace GMD.Pages
             List<QueryResult> queryResults = new List<QueryResult>();
             foreach (string sympt in brokenSymptom)
             {
-                Console.WriteLine("Researched symptoms  ----------------------------------------------- : " + sympt);
-                queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, sympt, luceneVersion));
-
+                if (sympt != "")
+                {
+                    Console.WriteLine("Researched symptoms  ----------------------------------------------- : " + sympt);
+                    queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, sympt, luceneVersion));
+                }         
             }
             //queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, symptom, luceneVersion));
             Dictionary<string, Disease> diseasesDict = new Dictionary<string, Disease>();
@@ -86,10 +88,7 @@ namespace GMD.Pages
                     symptomsCures.AddRange(disR.symptomCures);
                     foreach (Disease disease in dis)
                     {
-                        if(disease.diseaseName.Contains("weaver syndrome"))
-                        {
-                            Console.WriteLine(disease.diseaseName); 
-                        }
+                      
                         if (diseasesDict.ContainsKey(disease.diseaseName))
                         {
 
@@ -114,10 +113,7 @@ namespace GMD.Pages
 
                     foreach (Drug drug in drugR.drugs)
                     {
-                        if (drug.drugName.Contains("Quetiapine"))
-                        {
-                            Console.WriteLine(drug.drugName);
-                        }
+                      
                         if (!known)
                         {
 
@@ -199,50 +195,7 @@ namespace GMD.Pages
 
             }
             var orderedSymptomsCures = symptomsCures.DistinctBy(x => x.drugName).OrderByDescending(x => x.drugScore).ToList();
-            /*Console.WriteLine(" ----------------------------- DISEASES\n\n");
-            foreach (var disease in orderedDiseasesResults)
-            {
-                Console.WriteLine("\n");
-                Console.WriteLine(" -> DISEASE NAME : " + disease.diseaseName);
-                Console.WriteLine(" -> DISEASE Score : " + disease.score);
-                Console.WriteLine(" -> Associated cure : ");
-                foreach (Drug cure in disease.cures)
-                {
-                    Console.WriteLine("     -> Drug name  : " + cure.drugName);
-                    Console.WriteLine("     -> Indication  : " + cure.indication);
-
-                }
-                Console.WriteLine("\n");
-            }
-            Console.WriteLine(" ----------------------------- DRUGS\n\n");
-            foreach (var drug in orderedDrugsResults)
-            {
-                Console.WriteLine("\n");
-                Console.WriteLine(" -> DRUG NAME : " + drug.drugName);
-                Console.WriteLine(" -> DRUG Score : " + drug.drugScore);
-                Console.WriteLine(" -> Toxicity : " + drug.toxicity);
-                Console.WriteLine("\n");
-            }
-
-            Console.WriteLine(" ----------------------------- SYMPTOMS CURES\n\n");
-            int j = 0;
-
-            foreach (var drug in orderedSymptomsCures)
-            {
-                if (j < MAX_SYMPTOMS_CURE)
-                {
-                    Console.WriteLine("\n");
-                    Console.WriteLine(" -> DRUG NAME : " + drug.drugName);
-                    Console.WriteLine(" -> DRUG Score : " + drug.drugScore);
-                    Console.WriteLine(" -> Indication : " + drug.indication);
-                    Console.WriteLine("\n");
-                }
-                else
-                {
-                    break;
-                }
-                j++;
-            }*/
+            
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
             queryTime = stopwatch.ElapsedMilliseconds.ToString();
