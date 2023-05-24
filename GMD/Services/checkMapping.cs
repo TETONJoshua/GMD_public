@@ -29,7 +29,7 @@ namespace GMD.Services
 
             foreach(RecordOmin omim in ominTxtDatas)
             {
-                OmimTXTClassID.Add(omim.Number);
+                OmimTXTClassID.Add(omim.Number.Replace("\n","").Trim());
             }
 
             foreach (RecordOminCSV omim in ominCsvDatas)
@@ -57,21 +57,20 @@ namespace GMD.Services
             foreach (Meddra_SE medSE in meddraSeDatas)
             {
                 meddraSECUI.Add(medSE.Code);
-                meddraSECID.Add(medSE.CID);
-
+                meddraSECID.Add(medSE.CID.Replace("CID1","CIDm"));
             }
 
             foreach (Meddra_freq medFreq in meddraFreqDatas)
             {
                 meddraFreqCUI.Add(medFreq.Code);
-                meddraFreqCID.Add(medFreq.CID);
+                meddraFreqCID.Add(medFreq.CID.Replace("CID1", "CIDm"));
 
             }
 
             foreach (Meddra_Indications medIndic in meddraIndicationsData)
             {
                 meddraIndicCUI.Add(medIndic.CUI);
-                meddraIndicCID.Add(medIndic.CID);
+                meddraIndicCID.Add(medIndic.CID.Replace("CID1", "CIDm"));
 
             }
 
@@ -95,26 +94,134 @@ namespace GMD.Services
             int sameOccurences = 0;
             int differences = 0;
 
+            //Check Drugbank keg link
             sameOccurences = drugBankName.Intersect(keggName).Count();
             differences = drugBankName.Except(keggName).Count();
 
-            Console.WriteLine($"Between DrugBank and Kegg there is {sameOccurences} similarities and {differences} more in the XML.\n");
+            Console.WriteLine($"Between DrugBank and Kegg there is {sameOccurences} similarities and {differences} more in the XML.");
 
             sameOccurences = keggName.Intersect(drugBankName).Count();
             differences = keggName.Except(drugBankName).Count();
 
-            Console.WriteLine($"Between DrugBank and Kegg there is {sameOccurences} similarities and {differences} more in the keg.\n");
+            Console.WriteLine($"Between DrugBank and Kegg there is {sameOccurences} similarities and {differences} more in the keg.");
 
+            //Check keg Chemical Sources link
             sameOccurences = keggATC.Intersect(ChemicalATC).Count();
             differences = keggATC.Except(ChemicalATC).Count();
 
-            Console.WriteLine($"Between ChemicalSources and Kegg there is {sameOccurences} similarities and {differences} more in the keg.\n");
+            Console.WriteLine($"Between ChemicalSources and Kegg there is {sameOccurences} similarities and {differences} more in the keg.");
 
             sameOccurences = ChemicalATC.Intersect(keggATC).Count();
             differences = ChemicalATC.Except(keggATC).Count();
 
-            Console.WriteLine($"Between Chemical and Kegg there is {sameOccurences} similarities and {differences} more in the Chemical.\n");
+            Console.WriteLine($"Between Chemical and Kegg there is {sameOccurences} similarities and {differences} more in the Chemical.");
 
+            //Check Chemical Sources Meddra files link
+            sameOccurences = ChemicalCID.Intersect(meddraIndicCID).Count();
+            differences = ChemicalCID.Except(meddraIndicCID).Count();
+
+            Console.WriteLine($"Between ChemicalSources and meddra_all_indications there is {sameOccurences} similarities and {differences} more in Chemical.");
+
+            sameOccurences = meddraIndicCID.Intersect(ChemicalCID).Count();
+            differences = meddraIndicCID.Except(ChemicalCID).Count();
+
+            Console.WriteLine($"Between ChemicalSources and meddra_all_indications there is {sameOccurences} similarities and {differences} more in Meddra_all_indications.");
+
+
+            sameOccurences = ChemicalCID.Intersect(meddraFreqCID).Count();
+            differences = ChemicalCID.Except(meddraFreqCID).Count();
+
+            Console.WriteLine($"Between ChemicalSources and meddra_all_freq there is {sameOccurences} similarities and {differences} more in Chemical.");
+
+            sameOccurences = meddraFreqCID.Intersect(ChemicalCID).Count();
+            differences = meddraFreqCID.Except(ChemicalCID).Count();
+
+            Console.WriteLine($"Between ChemicalSources and meddra_all_freq there is {sameOccurences} similarities and {differences} more in Meddra_all_freq.");
+
+            sameOccurences = ChemicalCID.Intersect(meddraSECID).Count();
+            differences = ChemicalCID.Except(meddraSECID).Count();
+
+            Console.WriteLine($"Between ChemicalSources and meddra_all_se there is {sameOccurences} similarities and {differences} more in Chemical");
+
+            sameOccurences = meddraSECID.Intersect(ChemicalCID).Count();
+            differences = meddraSECID.Except(ChemicalCID).Count();
+
+            Console.WriteLine($"Between ChemicalSources and meddra_all_se there is {sameOccurences} similarities and {differences} more in Meddra_all_se.");
+
+            //Check Hpo Meddra files link
+            sameOccurences = HpoUMLS.Intersect(meddraIndicCUI).Count();
+            differences = HpoUMLS.Except(meddraIndicCUI).Count();
+
+            Console.WriteLine($"Between Hpo and meddra_all_indications there is {sameOccurences} similarities and {differences} more in Hpo.");
+
+            sameOccurences = meddraIndicCUI.Intersect(HpoUMLS).Count();
+            differences = meddraIndicCUI.Except(HpoUMLS).Count();
+
+            Console.WriteLine($"Between Hpo and meddra_all_indications there is {sameOccurences} similarities and {differences} more in Meddra_all_indications.");
+
+
+            sameOccurences = HpoUMLS.Intersect(meddraFreqCUI).Count();
+            differences = HpoUMLS.Except(meddraFreqCUI).Count();
+
+            Console.WriteLine($"Between Hpo and meddra_all_freq there is {sameOccurences} similarities and {differences} more in Hpo.");
+
+            sameOccurences = meddraFreqCUI.Intersect(HpoUMLS).Count();
+            differences = meddraFreqCUI.Except(HpoUMLS).Count();
+
+            Console.WriteLine($"Between Hpo and meddra_all_freq there is {sameOccurences} similarities and {differences} more in Meddra_all_freq.");
+
+            sameOccurences = HpoUMLS.Intersect(meddraSECUI).Count();
+            differences = HpoUMLS.Except(meddraSECUI).Count();
+
+            Console.WriteLine($"Between Hpo and meddra_all_se there is {sameOccurences} similarities and {differences} more in Hpo.");
+
+            sameOccurences = meddraSECUI.Intersect(HpoUMLS).Count();
+            differences = meddraSECUI.Except(HpoUMLS).Count();
+
+            Console.WriteLine($"Between Hpo and meddra_all_se there is {sameOccurences} similarities and {differences} more in Meddra_all_se.");
+
+            sameOccurences = HpoUMLS.Intersect(meddraCUI).Count();
+            differences = HpoUMLS.Except(meddraCUI).Count();
+
+            Console.WriteLine($"Between Hpo and meddra there is {sameOccurences} similarities and {differences} more in Hpo.");
+
+            sameOccurences = meddraCUI.Intersect(HpoUMLS).Count();
+            differences = meddraCUI.Except(HpoUMLS).Count();
+
+            Console.WriteLine($"Between Hpo and meddra there is {sameOccurences} similarities and {differences} more in Meddra.");
+
+            //Check Hpo Hpo_annotations link
+            sameOccurences = HpoHP.Intersect(SqliteHP).Count();
+            differences = HpoHP.Except(SqliteHP).Count();
+
+            Console.WriteLine($"Between Hpo and hpo_annotations is {sameOccurences} similarities and {differences} more in Hpo.");
+
+            sameOccurences = SqliteHP.Intersect(HpoHP).Count();
+            differences = SqliteHP.Except(HpoHP).Count();
+
+            Console.WriteLine($"Between Hpo and hpo_annotations there is {sameOccurences} similarities and {differences} more in hpo_annotations.");
+
+            //Check hpo OmimCSV links
+            sameOccurences = HpoUMLS.Intersect(OmimCSVUMLS).Count();
+            differences = HpoUMLS.Except(OmimCSVUMLS).Count();
+
+            Console.WriteLine($"Between Hpo and omim_onto there is {sameOccurences} similarities and {differences} more in Hpo.");
+
+            sameOccurences = OmimCSVUMLS.Intersect(HpoUMLS).Count();
+            differences = OmimCSVUMLS.Except(HpoUMLS).Count();
+
+            Console.WriteLine($"Between Hpo and omim_onto there is {sameOccurences} similarities and {differences} more in omim_onto.");
+
+            //Check omim_onto omimTxt link
+            sameOccurences = OmimCSVClassID.Intersect(OmimTXTClassID).Count();
+            differences = OmimCSVClassID.Except(OmimTXTClassID).Count();
+
+            Console.WriteLine($"Between omimTXT and omim_onto there is {sameOccurences} similarities and {differences} more in omim_onto.");
+
+            sameOccurences = OmimTXTClassID.Intersect(OmimCSVClassID).Count();
+            differences = OmimTXTClassID.Except(OmimCSVClassID).Count();
+
+            Console.WriteLine($"Between omimTXT and omim_onto there is {sameOccurences} similarities and {differences} more in omimTxt.\n");
         }
     }
 
