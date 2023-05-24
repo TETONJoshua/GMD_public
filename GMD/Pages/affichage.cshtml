@@ -79,8 +79,8 @@
                                         @if (drug.indication != "")
                                         {
                                             <p class="cure"><span class="indication"> Indication : </span> @drug.indication </p>
-                                            <span class="score">Source: @drug.sourceDoc, Score: @drug.drugScore</span>
-                                        }
+                                            <span class="score">Score: @drug.drugScore</span>   <span class="source">Source: @drug.sourceDoc</span>
+                                    }
                                     </div>
                                 }
                             }
@@ -89,7 +89,7 @@
                                 <p>None</p>
                             }
                             <br>
-                            <span class="score">Score: @disease.score, Source : @disease.sourceDoc</span>
+                            <span class="score">Score: @disease.score</span>    <span class="source">Source : @disease.sourceDoc</span>
                         </div>
                         <hr class="border border-danger border-2 opacity-50">
                     }
@@ -120,7 +120,7 @@
 
                                 </div>
                                 <br>
-                                <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
+                            <p><span class="score">Score: @drug.drugScore</span>        <span class="source">Source: @drug.sourceDoc</span></p>
                             </div>
                             <hr class="border border-danger border-2 opacity-50">
                         }
@@ -149,7 +149,7 @@
                                 <p class="toxicity"> Indication : @drug.indication </p>
                             </div>
                             <br>
-                            <p><span class="score">Score: @drug.drugScore</span>        <span class="score">Source: @drug.sourceDoc</span></p>
+                            <p><span class="score">Score: @drug.drugScore</span>        <span class="source">Source: @drug.sourceDoc</span></p>
                         </div>
                         <hr class="border border-danger border-2 opacity-50">
                     }
@@ -160,6 +160,27 @@
     </div>
     
 </div>
+
+<script type="text/javascript">
+    var elements = document.getElementsByClassName('score');
+    elementsLength = elements.length;
+    for (var i = 0 ; i < elementsLength ; i++) {
+        score = parseFloat(elements[i].innerHTML.replace("Score: ", ""));
+        if(score < 1){
+            elements[i].style.color = '#F25F53'
+        }
+        else if (score < 5) {
+            elements[i].style.color = '#F5940F'
+        }
+        else if (score < 14) {
+            elements[i].style.color = '#F3F931'
+        }
+        else {
+            elements[i].style.color = '#6DF3A0'
+        }
+    }
+
+</script>
 
 <style>
     /* Reset default browser styles */
@@ -271,7 +292,12 @@
     }
 
         /* Symptom score styles */
-        .symptom .score {
+        .symptom .score{
+            font-weight: bold;
+            color: #5bc0de;
+        }
+
+        .source{
             font-weight: bold;
             color: #5bc0de;
         }
