@@ -75,12 +75,31 @@
             this.synonyms = new List<string>();
             this.cures = new List<Drug>();
         }
+
+        public Disease(string diseaseName, string sourceDoc)
+        {
+            this.diseaseName = diseaseName;
+            diseaseFrequency = 7;
+            this.synonyms = new List<string>();
+            this.cures = new List<Drug>();
+            this.sourceDoc = sourceDoc;
+        }
+
         public Disease(string diseaseName, int diseaseFreq)
         {
             this.diseaseName = diseaseName;
             this.diseaseFrequency= diseaseFreq;
             this.synonyms = new List<string>();
             this.cures = new List<Drug>();
+        }
+
+        public Disease(string diseaseName, int diseaseFreq, string sourceDoc)
+        {
+            this.diseaseName = diseaseName;
+            this.diseaseFrequency = diseaseFreq;
+            this.synonyms = new List<string>();
+            this.cures = new List<Drug>();
+            this.sourceDoc = sourceDoc;
         }
     }
 

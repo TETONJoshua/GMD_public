@@ -18,7 +18,6 @@ namespace GMD.Services
             drugBankSource.Load("./sources/drugbank.xml");
             reader.Close();
             XmlNode drugbank = drugBankSource["drugbank"];
-            Console.WriteLine(drugBankSource.LastChild.Name);
             foreach (XmlNode drug in drugbank.ChildNodes)
             {
                 //Console.WriteLine(drug["atc-codes"].FirstChild.Name);
@@ -65,11 +64,8 @@ namespace GMD.Services
             foreach (RecordDrugBankXML drug in drugBankDatas)
             {
                 Document doc = new Document();
-                if (drug.name == "Clopidogrel")
-                {
-                    Console.WriteLine(drug.name);
-                }
-                doc.Add(new StringField("drugName", drug.name, Field.Store.YES));
+                
+                doc.Add(new StringField("drugName_DB", drug.name, Field.Store.YES));
                 doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
                 doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));
                 doc.Add(new TextField("indication", drug.indication, Field.Store.YES));

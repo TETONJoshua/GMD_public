@@ -50,7 +50,7 @@ namespace GMD.Pages
 
             //Create an index writer
             IndexWriterConfig indexConfig = new IndexWriterConfig(luceneVersion, standardAnalyzer);
-            indexConfig.OpenMode = OpenMode.CREATE;                             // create/overwrite index
+            indexConfig.OpenMode = OpenMode.APPEND;                             // create/overwrite index
             IndexWriter writer = new IndexWriter(indexDir, indexConfig);
 
             brKeg dKegg = new brKeg(); //Done
