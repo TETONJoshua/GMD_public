@@ -27,27 +27,8 @@ namespace GMD.Services
                 else { countNullNames++; }
                 if (drug["toxicity"] != null) { record.toxicity = drug["toxicity"].InnerText; }
                 else { countNullTox++; }
-                if (drug["interaction"] != null) { record.interaction = drug["interaction"].InnerText; }
                 if (drug["indication"] != null) { record.indication = drug["indication"].InnerText; }
                 else { countNullInt++; }
-                if (drug["synonyms"] != null)
-                {
-                    foreach (XmlNode synonym in drug["synonyms"])
-                    {
-                        record.synonyms.Add(synonym.InnerText);
-                    }
-                }
-                if (drug["products"] != null)
-                {
-                    foreach (XmlNode product in drug["products"])
-                    {
-                        if (product["name"] != null)
-                        {
-                            record.products.Add(product["name"].InnerText);
-                        }
-                    }
-                }
-               
                 parsedResult.Add(record);
                
 
@@ -67,16 +48,8 @@ namespace GMD.Services
                 
                 doc.Add(new StringField("drugName_DB", drug.name, Field.Store.YES));
                 doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
-                doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));
                 doc.Add(new TextField("indication", drug.indication, Field.Store.YES));
-                foreach (string product in drug.products)
-                {
-                    doc.Add(new StringField("product", product, Field.Store.YES));
-                }
-                foreach (string synonym in drug.synonyms)
-                {
-                    doc.Add(new StringField("synonym", synonym, Field.Store.YES));
-                }
+               
                 writer.AddDocument(doc);
             }
             writer.Commit();
