@@ -12,7 +12,7 @@ using LuceneDirectory = Lucene.Net.Store.Directory;
 
 namespace GMD.Pages
 {
-    public class affichageModel : PageModel
+    public class displayModel : PageModel
     {
         public const LuceneVersion luceneVersion = LuceneVersion.LUCENE_48;
         private readonly ILogger<IndexModel> _logger;
