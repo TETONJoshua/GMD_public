@@ -56,3 +56,5 @@ The project is launched!
 The advantage of getting and running the .NET solution directly is that all the dependencies of the different libraries are already installed, you don't have to do any other installation. 
 
 **Warning** You may be asked by the IDE to synchronize the dependencies, just click on the alert popup button.
+
+Obviously, we didn't put the source files in the repo (too huge to download) so if you have to test the project, be sure to create a folder at the project root named <b>sources<b>.
