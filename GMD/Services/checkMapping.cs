@@ -5,6 +5,20 @@ namespace GMD.Services
 {
     public class checkMapping
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hpoDatas"></param>
+        /// <param name="keggDatas"></param>
+        /// <param name="drugBankDatas"></param>
+        /// <param name="chemicalsDatas"></param>
+        /// <param name="ominTxtDatas"></param>
+        /// <param name="ominCsvDatas"></param>
+        /// <param name="meddraDatas"></param>
+        /// <param name="sqlitesDatas"></param>
+        /// <param name="meddraFreqDatas"></param>
+        /// <param name="meddraSeDatas"></param>
+        /// <param name="meddraIndicationsData"></param>
             public void MappingQuality(List<RecordHPO> hpoDatas,List<RecordBrKEG> keggDatas, List<RecordDrugBankXML> drugBankDatas, List<Chemical> chemicalsDatas, List<RecordOmin> ominTxtDatas, List<RecordOminCSV> ominCsvDatas, List<Meddra> meddraDatas, List<sqlite> sqlitesDatas, List<Meddra_freq> meddraFreqDatas, List<Meddra_SE> meddraSeDatas, List<Meddra_Indications> meddraIndicationsData)
             {
 
@@ -27,7 +41,21 @@ namespace GMD.Services
             List<String> SqliteHP = new List<String>();
             List<String> OmimTXTClassID = new List<String>();
 
-            foreach(RecordOmin omim in ominTxtDatas)
+            Console.WriteLine("Number of distinct elements in each list:");
+
+            Console.WriteLine("hpo.obo : " + hpoDatas.Distinct().Count());
+            Console.WriteLine("br08303.keg : " + keggDatas.Distinct().Count());
+            Console.WriteLine("drugbank.xml : " + drugBankDatas.Distinct().Count());
+            Console.WriteLine("chemical.sources.v5.0.tsv : " + chemicalsDatas.Distinct().Count());
+            Console.WriteLine("omim.txt : " + ominTxtDatas.Distinct().Count());
+            Console.WriteLine("omim_onto.csv : " + ominCsvDatas.Distinct().Count());
+            Console.WriteLine("meddra.tsv : " + meddraDatas.Distinct().Count());
+            Console.WriteLine("hpo_annotations.sqlite : " + sqlitesDatas.Distinct().Count());
+            Console.WriteLine("meddra_freq.tsv : " + meddraFreqDatas.Distinct().Count());
+            Console.WriteLine("meddra_all_se.tsv : " + meddraSeDatas.Distinct().Count());
+            Console.WriteLine("meddra_all_indications.tsv : " + meddraIndicationsData.Distinct().Count());
+
+            foreach (RecordOmin omim in ominTxtDatas)
             {
                 OmimTXTClassID.Add(omim.Number.Replace("\n","").Trim());
             }

@@ -78,9 +78,13 @@ namespace GMD.Pages
             List<sqlite> sqlitesDatas = sqliteParser.ParseSqlite();
             stopwatch.Stop();
 
-            checkMapp.MappingQuality(hpoDatas, keggDatas, drugBankDatas, chemicalsDatas, ominTxtDatas, ominCsvDatas, meddraDatas, sqlitesDatas, meddraFreqDatas, meddraSeDatas, meddraIndicationsData);
-
             Console.WriteLine("Total Parse Time : " +  stopwatch.Elapsed);
+
+            stopwatch.Restart();
+            checkMapp.MappingQuality(hpoDatas, keggDatas, drugBankDatas, chemicalsDatas, ominTxtDatas, ominCsvDatas, meddraDatas, sqlitesDatas, meddraFreqDatas, meddraSeDatas, meddraIndicationsData);
+            stopwatch.Stop();
+
+            Console.WriteLine("Total Check Time : " + stopwatch.Elapsed);
 
             stopwatch.Restart();
 
