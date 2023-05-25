@@ -57,20 +57,20 @@ namespace GMD.Services
             foreach (Meddra_SE medSE in meddraSeDatas)
             {
                 meddraSECUI.Add(medSE.Code);
-                meddraSECID.Add(medSE.CID.Replace("CID1","CIDm"));
+                meddraSECID.Add(medSE.CID);
             }
 
             foreach (Meddra_freq medFreq in meddraFreqDatas)
             {
                 meddraFreqCUI.Add(medFreq.Code);
-                meddraFreqCID.Add(medFreq.CID.Replace("CID1", "CIDm"));
+                meddraFreqCID.Add(medFreq.CID);
 
             }
 
             foreach (Meddra_Indications medIndic in meddraIndicationsData)
             {
                 meddraIndicCUI.Add(medIndic.CUI);
-                meddraIndicCID.Add(medIndic.CID.Replace("CID1", "CIDm"));
+                meddraIndicCID.Add(medIndic.CID);
 
             }
 
