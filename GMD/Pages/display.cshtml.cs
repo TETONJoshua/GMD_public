@@ -1,6 +1,6 @@
 using GMD.Services;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
@@ -34,7 +34,6 @@ namespace GMD.Pages
             string indexPath = Path.Combine(Environment.CurrentDirectory, indexName);
             int MAX_RESULTS_DIS = 1000;
             int MAX_RESULTS_DRUG = 1000;
-            int MAX_SYMPTOMS_CURE = 1000;
             using LuceneDirectory indexDir = FSDirectory.Open(indexPath);
 
             // Create an analyzer to process the text 
@@ -63,9 +62,8 @@ namespace GMD.Pages
                 {
                     Console.WriteLine("Researched symptoms  ----------------------------------------------- : " + sympt);
                     queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, sympt, luceneVersion));
-                }         
+                }
             }
-            //queryResults.Add(QueryManager.getQueryResult(standardAnalyzer, searcher, symptom, luceneVersion));
             Dictionary<string, Disease> diseasesDict = new Dictionary<string, Disease>();
             Dictionary<string, float> diseasesDictStr = new Dictionary<string, float>();
             Dictionary<string, int> diseasesIteration = new Dictionary<string, int>();
@@ -76,6 +74,14 @@ namespace GMD.Pages
             List<Drug> symptomsCures = new List<Drug>();
 
             int k = 0;
+            //AND GATE WITH RANKING
+            //foreach symptoms given, recover all the query Results (symptoms that matched with the research)
+            //One disease result for each symptoms that matched with the entry points (omim.txt and hpo.obo)
+            //In each disease result, we go through all distinct diseases that match with the found symptom
+            //For each disease, we check if we already found it for another symptom, if we found one, or if it's the first symptom
+            //we add the one iteration of the disease in the iteration dictionnary and we sum the disease score with the score we already had or we 
+            //initiate it with the current score.
+            //same for drugs.
             foreach (QueryResult queryResult in queryResults)
             {
 
@@ -86,7 +92,7 @@ namespace GMD.Pages
                     symptomsCures.AddRange(disR.symptomCures);
                     foreach (Disease disease in dis)
                     {
-                      
+
                         if (diseasesDict.ContainsKey(disease.diseaseName))
                         {
 
@@ -111,14 +117,13 @@ namespace GMD.Pages
 
                     foreach (Drug drug in drugR.drugs)
                     {
-                      
+
                         if (!known)
                         {
 
                             if (drugsDict.ContainsKey(drug.drugName))
                             {
                                 known = true;
-                                //Console.WriteLine(drug.drugName);
                                 drugsDict[drug.drugName].drugScore = drugsDict[drug.drugName].drugScore + drug.drugScore;
                                 drugsDictStr[drug.drugName] = drugsDictStr[drug.drugName] + drug.drugScore;
                                 drugsIteration[drug.drugName] += 1;
@@ -126,7 +131,6 @@ namespace GMD.Pages
                             else if (k == 0)
                             {
                                 known = true;
-                                //Console.WriteLine(drug.drugName);
                                 drugsIteration.Add(drug.drugName, 1);
                                 drugsDict.Add(drug.drugName, drug);
                                 drugsDictStr.Add(drug.drugName, drug.drugScore);
@@ -138,6 +142,7 @@ namespace GMD.Pages
                 k++;
 
             }
+            //We just order the lists on the elements score.
             var orderedDiseases = diseasesDictStr.OrderByDescending(x => x.Value);
             var orderedDrugs = drugsDictStr.OrderByDescending(x => x.Value);
             Dictionary<string, float> diseasesResultsStr = new Dictionary<string, float>();
@@ -193,17 +198,19 @@ namespace GMD.Pages
 
             }
             var orderedSymptomsCures = symptomsCures.DistinctBy(x => x.drugName).OrderByDescending(x => x.drugScore).ToList();
-            
+
             stopwatch.Stop();
             Console.WriteLine("Query time : " + stopwatch.ElapsedMilliseconds);
             queryTime = stopwatch.ElapsedMilliseconds.ToString();
             diseases = orderedDiseasesResults;
-            foreach (var disease in orderedDiseasesResults) 
+            //proper display format
+            foreach (var disease in orderedDiseasesResults)
             {
-                if (disease.diseaseName.StartsWith("#") || disease.diseaseName.StartsWith("%")){
+                if (disease.diseaseName.StartsWith("#") || disease.diseaseName.StartsWith("%"))
+                {
                     disease.diseaseName = disease.diseaseName.Remove(0, 7);
                 }
-                if (disease.diseaseName.StartsWith("0") || 
+                if (disease.diseaseName.StartsWith("0") ||
                     disease.diseaseName.StartsWith("1") ||
                     disease.diseaseName.StartsWith("2") ||
                     disease.diseaseName.StartsWith("3") ||

@@ -1,21 +1,14 @@
 ﻿using GMD.Mapping;
 using GMD.Services;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.ComponentModel;
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
 using Lucene.Net.Index;
-using Lucene.Net.QueryParsers.Classic;
-using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Diagnostics;
 using LuceneDirectory = Lucene.Net.Store.Directory;
-using static Lucene.Net.Util.Packed.PackedInt32s;
-using GMD.Model;
 
 namespace GMD.Pages
 {
@@ -36,6 +29,8 @@ namespace GMD.Pages
 
         public IActionResult OnGet()
         {
+
+            //Initiate parsing and index of the datas.
 
             //Open the Directory using a Lucene Directory class
             string indexName = "lucene_index";
@@ -78,7 +73,7 @@ namespace GMD.Pages
             List<sqlite> sqlitesDatas = sqliteParser.ParseSqlite();
             stopwatch.Stop();
 
-            Console.WriteLine("Total Parse Time : " +  stopwatch.Elapsed);
+            Console.WriteLine("Total Parse Time : " + stopwatch.Elapsed);
 
             stopwatch.Restart();
             checkMapp.MappingQuality(hpoDatas, keggDatas, drugBankDatas, chemicalsDatas, ominTxtDatas, ominCsvDatas, meddraDatas, sqlitesDatas, meddraFreqDatas, meddraSeDatas, meddraIndicationsData);
@@ -107,6 +102,6 @@ namespace GMD.Pages
             writer.Dispose();
             return Redirect("/display");
         }
-       
+
     }
 }
