@@ -8,11 +8,13 @@ namespace GMD.Services
 {
     public class drugBankXML
     {
-        public int countNullATC, countRecord, countNullNames, countNullTox, countNullInt;
+        //Parses the DrugBank.xml file
         public List<RecordDrugBankXML> parseXML()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             List<RecordDrugBankXML> parsedResult = new List<RecordDrugBankXML>();
+
+            //Native .NET XMl loader, uses the DOM to navigates through datas. Fast and easy to use.
             XmlDocument drugBankSource = new XmlDocument();
             XmlTextReader reader = new XmlTextReader("./sources/drugbank.xml");
             drugBankSource.Load("./sources/drugbank.xml");
@@ -20,43 +22,20 @@ namespace GMD.Services
             XmlNode drugbank = drugBankSource["drugbank"];
             foreach (XmlNode drug in drugbank.ChildNodes)
             {
-                //Console.WriteLine(drug["atc-codes"].FirstChild.Name);
-                countRecord++;
                 RecordDrugBankXML record = new RecordDrugBankXML();
                 if (drug["name"] != null) { record.name = drug["name"].InnerText; }
-                else { countNullNames++; }
                 if (drug["toxicity"] != null) { record.toxicity = drug["toxicity"].InnerText; }
-                else { countNullTox++; }
-                if (drug["interaction"] != null) { record.interaction = drug["interaction"].InnerText; }
                 if (drug["indication"] != null) { record.indication = drug["indication"].InnerText; }
-                else { countNullInt++; }
-                if (drug["synonyms"] != null)
-                {
-                    foreach (XmlNode synonym in drug["synonyms"])
-                    {
-                        record.synonyms.Add(synonym.InnerText);
-                    }
-                }
-                if (drug["products"] != null)
-                {
-                    foreach (XmlNode product in drug["products"])
-                    {
-                        if (product["name"] != null)
-                        {
-                            record.products.Add(product["name"].InnerText);
-                        }
-                    }
-                }
-               
                 parsedResult.Add(record);
-               
-
             }
             stopwatch.Stop();
             Console.WriteLine("XML parse time : " + stopwatch.ElapsedMilliseconds);
             return parsedResult;
         }
 
+        //Indexes all the XML datas
+        //TextField allows a parsed query to be performed within the index field. This means that Lucene won't expect a perfect fit and will rank results with a score
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexXmlDatas(List<RecordDrugBankXML> drugBankDatas, IndexWriter writer)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -64,19 +43,9 @@ namespace GMD.Services
             foreach (RecordDrugBankXML drug in drugBankDatas)
             {
                 Document doc = new Document();
-                
                 doc.Add(new StringField("drugName_DB", drug.name, Field.Store.YES));
                 doc.Add(new TextField("toxicity", drug.toxicity, Field.Store.YES));
-                doc.Add(new TextField("interaction", drug.interaction, Field.Store.YES));
-                doc.Add(new TextField("indication", drug.indication, Field.Store.YES));
-                foreach (string product in drug.products)
-                {
-                    doc.Add(new StringField("product", product, Field.Store.YES));
-                }
-                foreach (string synonym in drug.synonyms)
-                {
-                    doc.Add(new StringField("synonym", synonym, Field.Store.YES));
-                }
+                doc.Add(new TextField("indication", drug.indication, Field.Store.YES));              
                 writer.AddDocument(doc);
             }
             writer.Commit();

@@ -8,7 +8,7 @@ namespace GMD.Services
     public class Meddra_SE_Parse
     {
        
-
+        //Parses Meddra_All_SE file
         public List<Meddra_SE> ParseMeddra_SE()
         {
 
@@ -16,19 +16,22 @@ namespace GMD.Services
             stopwatch.Start();
             List<Meddra_SE> symptomList = new List<Meddra_SE>();
 
-            // Séparer les lignes en fonction des sauts de ligne
+            
             string[] lines = File.ReadAllLines("sources/meddra_all_se.tsv");
 
-            // Parcourir chaque ligne
+            // Go through all lines
             foreach (string line in lines)
             {
-                // Séparer les éléments en fonction des tabulations
+                // Splits the lines on the tabs
                 string[] elements = line.Trim().Split('\t');
 
                 Meddra_SE entry = new Meddra_SE
                 {
+                    //Get CUI
                     Code = elements[2],
+                    //Get side effect of molecule
                     Symptoms = elements[5],
+                    //Get CID
                     CID = elements[0],
                 };
 
@@ -40,6 +43,9 @@ namespace GMD.Services
             return symptomList;
         }
 
+        //Indexes all Meddra SE datas
+        //TextField allows a parsed query to be performed within the index field. This means that Lucene won't expect a perfect fit and will rank results with a score
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexMeddraSEDatas(List<Meddra_SE> meddSEDatas, IndexWriter writer)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -47,9 +53,11 @@ namespace GMD.Services
             foreach (Meddra_SE drug in meddSEDatas)
             {
                 Document doc = new Document();
+                //index CID
                 doc.Add(new StringField("CID_SE", drug.CID, Field.Store.YES));
-                doc.Add(new StringField("CUI_SE", drug.Code, Field.Store.YES));
-                
+                //index CUI
+                doc.Add(new StringField("CUI_SE", drug.Code, Field.Store.YES));      
+                //index side effect
                 doc.Add(new TextField("name_SE", drug.Symptoms, Field.Store.YES));
                 writer.AddDocument(doc);
             }

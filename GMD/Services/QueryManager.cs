@@ -265,6 +265,8 @@ namespace GMD.Services
         {
             return new QueryResult(getDiseasesFromSymptom(standardAnalyzer, searcher, symptom, luceneVersion), getMoleculesFromSymptoms(standardAnalyzer, searcher, symptom, luceneVersion));
         }
+        
+        //Gets all the diseases results with the associated symptoms that matched with the input, and the drugs that can cure the disease if there are any.
         public static List<DiseaseResult> getDiseasesFromSymptom(Analyzer standardAnalyzer, IndexSearcher searcher, string symptom, LuceneVersion luceneVersion)
         {
             QueryParser parser = new QueryParser(luceneVersion, "symptoms_HPO", standardAnalyzer);

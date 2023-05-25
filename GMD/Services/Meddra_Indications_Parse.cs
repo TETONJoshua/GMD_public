@@ -7,18 +7,15 @@ namespace GMD.Services
 {
     public class Meddra_Indications_Parse
     {
+        //Parses the Meddra_All_Indications file
         public List<Meddra_Indications> ParseMeddra()
         {
             Stopwatch sw = Stopwatch.StartNew();    
             List<Meddra_Indications> symptomList = new List<Meddra_Indications>();
-
-            // Séparer les lignes en fonction des sauts de ligne
             string[] lines = File.ReadAllLines("sources/meddra_all_indications.tsv");
 
-            // Parcourir chaque ligne
             foreach (string line in lines)
             {
-                // Séparer les éléments en fonction des tabulations
                 string[] elements = line.Trim().Split('\t');
 
                 Meddra_Indications entry = new Meddra_Indications
@@ -26,9 +23,7 @@ namespace GMD.Services
                     CID = elements[0],
                     CUI = elements[5],
                     Symptom = elements[6],
-                   
                 };
-
                 symptomList.Add(entry);
 
             }
@@ -37,6 +32,9 @@ namespace GMD.Services
             return symptomList;
         }
 
+        //Indexes all the MeddraIndications datas
+        //TextField allows a parsed query to be performed within the index field. This means that Lucene won't expect a perfect fit and will rank results with a score
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexMeddraIndicationDatas(List<Meddra_Indications> meddIndicationDatas, IndexWriter writer)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();

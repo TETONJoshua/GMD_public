@@ -7,7 +7,7 @@ namespace GMD.Services
 {
     public class brKeg
     {
-
+        //Parses Kegg file
         public List<RecordBrKEG> parseKeg()
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -26,17 +26,16 @@ namespace GMD.Services
                         if (!subName.StartsWith("[DG:")) { correctedName += subName + " "; }
                     }
                     correctedName = correctedName.Trim();
-                    //Console.WriteLine($"Keg ATC : {kegInfo.Substring(0, 7)} ; Keg Name : {correctedName}");
-
                     records.Add(new RecordBrKEG(kegInfo.Substring(0, 7), correctedName));
                 }
             }
             stopwatch.Stop();
-            //Console.WriteLine(records.Count);
-            Console.WriteLine("Kegg parse time : " + stopwatch.ElapsedMilliseconds);
+            Console.WriteLine("Keg parse time : " + stopwatch.ElapsedMilliseconds);
             return records;
         }
 
+        //Indexes all KEGG datas
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexKeggDatas(List<RecordBrKEG> keggDatas, IndexWriter writer)
         {
             Stopwatch sw = new Stopwatch();
@@ -44,19 +43,14 @@ namespace GMD.Services
             foreach (RecordBrKEG drug in keggDatas)
             {
                 Document doc = new Document();
-                doc.Add(new StringField("drugName_KEG", drug.medicName, Field.Store.YES));
-                if (drug.ATC == "B01AC04")
-                {
-                    Console.WriteLine(drug.medicName);
-                }
+                doc.Add(new StringField("drugName_KEG", drug.medicName, Field.Store.YES));               
                 doc.Add(new StringField("ATC_KEG", drug.ATC, Field.Store.YES));
-
                 writer.AddDocument(doc);
             }
             
             writer.Commit();
             sw.Stop();
-            Console.WriteLine("Kegg index time : " + sw.ElapsedMilliseconds);
+            Console.WriteLine("Keg index time : " + sw.ElapsedMilliseconds);
         }
 
     }

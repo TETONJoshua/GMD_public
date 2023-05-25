@@ -8,12 +8,26 @@ namespace GMD.Services
 {
     public class ChemicalParse
     {
+        //Parses chemical source file
         public List<Chemical> ParseChemical()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             Console.WriteLine("Reading chem....");
             List<Chemical> chemicals = new List<Chemical>();
-            string[] lines = File.ReadAllLines("sources/chemical.sources.v5.0.tsv");
+            List<string> lines = new List<string>();
+            int currentLine= 0;
+
+            using (StreamReader reader = new StreamReader("sources/chemical.sources.v5.0.tsv"))
+            {
+                string line;
+                //datas beyond 4000 first lines are useless to us.
+                while ((line = reader.ReadLine()) != null && currentLine < 4000)
+                {
+                    lines.Add(line);
+                    currentLine++;
+                }
+            }
+
             foreach (string line in lines)
             {
                 if (line.Contains("CIDm") && line.Contains("CIDs") && line.Contains("ATC"))
@@ -22,23 +36,22 @@ namespace GMD.Services
 
                     if (parts.Length == 4)
                     {
-                        // Création d'un objet DataEntry et ajout à la liste
                         Chemical entry = new Chemical
                         {
                             CID = parts[0].Replace("m", "1"),
                             ATC = parts[3]
                         };
-
                         chemicals.Add(entry);
                     }
-                    
-                }
+                }               
             }
             stopwatch.Stop();
             Console.WriteLine("Chem parse time : " + stopwatch.ElapsedMilliseconds);
             return chemicals;
         }
 
+        //Indexes all chemical sources datas 
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexChemicalsDatas(List<Chemical> ChemicalDatas, IndexWriter writer)
         {
             Stopwatch sw = Stopwatch.StartNew();

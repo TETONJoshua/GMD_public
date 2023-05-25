@@ -9,7 +9,8 @@ namespace GMD.Services
 {
     public class ominTXT
     {
-
+        //Parses the OMIM.TXT file. The parsing uses the *FIELD* and *RECORD* keywords to jump through the useful datas without going through all the lines,
+        //because the file contains a lot of garbage datas for us. Collected fields are the disease name, the OMIM ID and the CS field that contains symptoms.
         public List<RecordOmin> ParseFile()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -95,7 +96,6 @@ namespace GMD.Services
                 var line = lines[i];
                 if (line.StartsWith("   ") && !line.StartsWith("   [") && !line.ToLower().Contains("autosomal"))
                 {
-                    //Console.WriteLine(line);
                     value.Add(line.Replace("   ", ""));
                 }
             }
@@ -103,6 +103,10 @@ namespace GMD.Services
             return value;
         }
 
+
+        //Indexes OMIM in Lucene rep (do not care for the typo in the method name)
+        //TextField allows a parsed query to be performed within the index field. This means that Lucene won't expect a perfect fit and will rank results with a score
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexOminTxtDatas(List<RecordOmin> drugBankDatas, IndexWriter writer)
         {
             Stopwatch stopwatch = new Stopwatch();

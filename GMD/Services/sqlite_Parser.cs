@@ -9,9 +9,9 @@ namespace GMD.Services
 {
     public class sqlite_Parser
     {
+        //Parses HPO_ANNOTATIONS.sqlite file
         public List<sqlite> ParseSqlite()
         {
-            //parseSqlite();
             Stopwatch stopwatch = Stopwatch.StartNew();
             List<sqlite> list = new List<sqlite>();
 
@@ -59,7 +59,8 @@ namespace GMD.Services
                             }
 
                         }
-                        catch { Console.WriteLine("pd"); }
+                        catch {}
+                        //uses the HPO codes to replace the frequency with a readable value for the app
                         switch (diseaseFreq)
                         {
                             case "HP:0040280":
@@ -94,21 +95,19 @@ namespace GMD.Services
             }
         }
 
+        //Indexes the annotations datas
+        //TextField allows a parsed query to be performed within the index field. This means that Lucene won't expect a perfect fit and will rank results with a score
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
+
         public void indexSqliteDatas(List<sqlite> SqliteDatas, IndexWriter writer)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             foreach (sqlite drug in SqliteDatas)
             {
-                //Console.WriteLine("CONNARD");
-                Document doc = new Document();
-                /*if (drug.disease_id.Contains("HP:0001423") )
-                {
-                    Console.WriteLine(drug.disease_label);
-                }*/
+                Document doc = new Document();               
                 doc.Add(new TextField("name_SQL", drug.disease_label, Field.Store.YES));
                 doc.Add(new StringField("HP_SQL", drug.disease_id.Trim(), Field.Store.YES));
                 doc.Add(new StringField("db", drug.disease_db, Field.Store.YES));
-                //Console.WriteLine(drug.disease_label);
                 doc.Add(new StringField("diseaseFrequency", drug.diseaseFreq, Field.Store.YES));
                 writer.AddDocument(doc);
             }
@@ -116,30 +115,6 @@ namespace GMD.Services
             writer.Commit();
             stopwatch.Stop();
             Console.WriteLine("SQLITE index time : " + stopwatch.ElapsedMilliseconds);
-        }
-
-        public void parseSqlite()
-        {
-            using (var connection = new SqliteConnection("Data Source=sources/hpo_annotations.sqlite"))
-            {
-                connection.Open();
-
-                var command = connection.CreateCommand();
-                command.CommandText =
-                    @"
-                        SELECT disease_label
-                        FROM phenotype_annotation
-                    ";
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var name = reader.GetString(0);
-
-                        //Console.WriteLine($"Hello, {name}!");
-                    }
-                }
-            }
-        }
+        }       
     }
 }
