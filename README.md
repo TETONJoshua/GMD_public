@@ -36,7 +36,7 @@ Navigate to the directory where you want to clone the project solution.
 
 Run the following command to clone the Git repository:
 
-`git clone https://gitlab.telecomnancy.univ-lorraine.fr/Antoine.Champault/gmd_projet_champault_defranoux_teton.git`
+`git clone https://github.com/TETONJoshua/GMD_public`
 
 ##Launching the project in Visual Studio
 
@@ -56,3 +56,5 @@ The project is launched!
 The advantage of getting and running the .NET solution directly is that all the dependencies of the different libraries are already installed, you don't have to do any other installation. 
 
 **Warning** You may be asked by the IDE to synchronize the dependencies, just click on the alert popup button.
+
+Obviously, we didn't put the source files in the repo (too huge to download) so if you have to test the project, be sure to create a folder at the project root named <b>sources<b>.
