@@ -105,7 +105,7 @@ namespace GMD.Pages
 
             Console.WriteLine("Total Index Time : " + stopwatch.Elapsed);
             writer.Dispose();
-            return Redirect("/affichage");
+            return Redirect("/display");
         }
        
     }
