@@ -55,8 +55,6 @@ namespace GMD.Pages
 
             stopwatch.Restart();
 
-
-            //Console.WriteLine("Search for CUI for " + symptom);
             string[] brokenSymptom = symptom.Split(";");
             List<QueryResult> queryResults = new List<QueryResult>();
             foreach (string sympt in brokenSymptom)
