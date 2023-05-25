@@ -7,6 +7,7 @@ namespace GMD.Services
 {
     public class ominCSV
     {
+        //Parses the omim_onto.csv file
         public List<RecordOminCSV> ParseCsv()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -22,7 +23,7 @@ namespace GMD.Services
                     if (isFirstLine)
                     {
                         isFirstLine = false;
-                        continue; // Ignore la première ligne (en-têtes des colonnes)
+                        continue; // Ignores the first line (headers for the column fields)
                     }
 
                     string[] values = line.Split('!');
@@ -43,6 +44,10 @@ namespace GMD.Services
             return RecordOminCSVs;
         }
 
+
+        //Indexes OMIM in Lucene rep (do not care for the typo in the method name)
+        //TextField allows a parsed query to be performed within the index field. This means that Lucene won't expect a perfect fit and will rank results with a score
+        //String field works as a key and Lucene will look for a perfect or almost perfect fit.
         public void indexOminCsvDatas(List<RecordOminCSV> ominCSVdatas, IndexWriter writer)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();

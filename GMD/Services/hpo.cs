@@ -9,6 +9,7 @@ namespace GMD.Services
 {
     public class hpo
     {
+        //Parses the HOP.obo file
         public List<RecordHPO> ParseHpo()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -31,20 +32,21 @@ namespace GMD.Services
                     string term_name = name_regex.Match(term_text).Groups[1].Value;
                     string term_def = def_regex.Match(term_text).Success ? def_regex.Match(term_text).Groups[1].Value : "None";
                     List<string> term_synonyms = new();
+                    //Get synonyms
                     foreach (Match synonym_match in synonym_regex.Matches(term_text))
                     {
                         term_synonyms.Add(synonym_match.Groups[1].Value);
                     }
                     List<string> term_xrefs = new();
+                    //get UMLS of symptoms
                     foreach (Match xref_match in xref_regex.Matches(term_text))
                     {
-                        //Console.WriteLine(xref_match.Groups[1].Value);
                         term_xrefs.Add(xref_match.Groups[1].Value);
                     }
                     List<string> term_is_a = new();
+                    //Get symtpom
                     foreach (Match isa_match in is_a_regex.Matches(term_text))
                     {
-                        //Console.WriteLine(xref_match.Groups[1].Value);
                         term_is_a.Add(isa_match.Groups[1].Value);
                     }
                     RecordHPO term = new(term_id, term_name, term_def, term_synonyms, term_xrefs, term_is_a);
@@ -56,6 +58,7 @@ namespace GMD.Services
             return terms;
         }
 
+        //Indexes all the HPO.obo datas
         public void indexHPODatas(List<RecordHPO> HPODatas, IndexWriter writer)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -66,28 +69,20 @@ namespace GMD.Services
 
                     Document doc = new Document();
                     doc.Add(new StringField("HP_HPO", data.term_id, Field.Store.YES));
-                    //doc.Add(new TextField("symptoms", data.name, Field.Store.YES));
-                    //doc.Add(new TextField("symptoms", data.definition, Field.Store.YES));
                     doc.Add(new TextField("definition", data.definition, Field.Store.YES));
                     foreach(string xref in data.xrefs) 
                     {
                         doc.Add(new StringField("CUI_HPO", xref , Field.Store.YES));
-                    }
-                    
+                    }                    
                     string turboSyno = "";
+
+                    //indexes synonyms with symptom names so the research can be performed on synonyms too 
                     foreach (string synonym in data.synonyms)
                     {
                         turboSyno += synonym + " ; ";
                     }
                     turboSyno += data.name + " ; ";
-
-                    //turboSyno += data.definition + " ; ";
-                    //Console.WriteLine(turboSyno);
                     doc.Add(new TextField("symptoms_HPO", turboSyno, Field.Store.YES));
-                    /*foreach (string isa in data.is_a)
-                    {
-                        doc.Add(new StringField("HP", isa, Field.Store.YES));
-                    }*/
                     writer.AddDocument(doc);
                 }
                
