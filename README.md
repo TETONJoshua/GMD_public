@@ -36,7 +36,7 @@ Navigate to the directory where you want to clone the project solution.
 
 Run the following command to clone the Git repository:
 
-`git clone https://gitlab.telecomnancy.univ-lorraine.fr/Antoine.Champault/gmd_projet_champault_defranoux_teton.git`
+`git clone https://github.com/TETONJoshua/GMD_public`
 
 ##Launching the project in Visual Studio
 
